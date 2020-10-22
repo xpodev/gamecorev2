@@ -4,9 +4,11 @@ using System.Collections.Generic;
 
 namespace GameCore.Multiplayer
 {
-    public class Protocol
+    public class Protocol<T> where T : Enum
     {
-        public static Protocol CurrentProtocol
+        public delegate void MessageHandler(Message<T> msg);
+
+        public static Protocol<T> CurrentProtocol
         {
             get;
             private set;
@@ -14,15 +16,13 @@ namespace GameCore.Multiplayer
 
         public static Version Version = new Version(1, 0, 0);
 
-        private class TypeCallbackInfo
+        private MessageHandler[] handlers;
+
+        public MessageHandler DefaultHandler
         {
-            public int id;
-            public Action<object> action;
+            get;
+            set;
         }
-
-        private readonly Dictionary<Type, TypeCallbackInfo> typesIds = new Dictionary<Type, TypeCallbackInfo>();
-
-        private readonly List<Type> types = new List<Type>();
 
         public IClock Clock
         {
@@ -33,99 +33,80 @@ namespace GameCore.Multiplayer
         private Protocol(IClock clock)
         {
             Clock = clock;
+            handlers = new MessageHandler[Enum.GetValues(typeof(T)).Length];
         }
 
-        public static Protocol Instantiate(IClock clock)
+        public static Protocol<T> Instantiate(IClock clock)
         {
             if (CurrentProtocol is null)
             {
-                CurrentProtocol = new Protocol(clock);
+                CurrentProtocol = new Protocol<T>(clock);
             }
             return CurrentProtocol;
         }
 
-        public bool ValidateProtocolSettings(ProtocolSettings settings)
+        public void SetHandler(int commandId, MessageHandler handler)
+        {
+            if (commandId >= handlers.Length || commandId < 0)
+            {
+                throw new ArgumentOutOfRangeException($"Tried to register a command that doesn't exist (Command Id: {commandId})");
+            }
+            handlers[commandId] = handler;
+        }
+
+        public void SetHandler(T commandId, MessageHandler handler)
+        {
+            SetHandler(Convert.ToInt32(commandId), handler);
+        }
+
+        public void UnSetHandler(int commandId)
+        {
+            if (commandId >= handlers.Length || commandId < 0)
+            {
+                throw new ArgumentOutOfRangeException($"Tried to unregister a command that doesn't exist (Command Id: {commandId})");
+            }
+            handlers[commandId] = null;
+        }
+
+        public void UnSetHandler(T commandId)
+        {
+            UnSetHandler(Convert.ToInt32(commandId));
+        }
+
+        public bool ValidateProtocolSettings(ProtocolSettings<T> settings)
         {
             if (settings.Version != Version)
             {
                 return false;
             }
-            if (settings.RegisteredTypes.Length != types.Count)
+            if (Enum.GetUnderlyingType(settings.EnumType) != Enum.GetUnderlyingType(typeof(T)))
             {
                 return false;
-            }
-            for (int i = 0; i < types.Count; i++)
-            {
-                if (types[i] != settings.RegisteredTypes[i])
-                {
-                    return false;
-                }
             }
             return true;
         }
 
-        public Type[] GetResiteredTypes()
+        public void HandleMessage(Message<T> msg)
         {
-            return types.ToArray();
-        }
-
-        public int RegisterType(Type t)
-        {
-            int typeId = typesIds.Count;
-            if (typesIds.ContainsKey(t))
+            int handlerIndex = Convert.ToInt32(msg.CommandId);
+            MessageHandler handler = handlers[handlerIndex];
+            if (handler is null)
             {
-                return -1;
+                if (DefaultHandler is null)
+                {
+                    throw new ArgumentNullException($"Handler for command (Id: {handlerIndex}) is not set");
+                }
+                DefaultHandler.Invoke(msg);
             }
-            typesIds.Add(t, new TypeCallbackInfo() { id = typeId, action = null });
-            types.Add(t);
-            return typeId;
+            else
+            {
+                handler.Invoke(msg);
+            }
         }
 
-        public int RegisterType<T>()
+        public Message<T> CreateMessage(T command, object obj, long serial)
         {
-            return RegisterType(typeof(T));
-        }
-
-        public void SetCallback(Type t, Action<object> action)
-        {
-            typesIds[t].action = action;
-        }
-
-        public void SetCallback<T>(Action<object> action)
-        {
-            SetCallback(typeof(T), action);
-        }
-
-        public void UnsetCallback(Type t)
-        {
-            typesIds[t].action = null;
-        }
-
-        public void UnsetCallback<T>()
-        {
-            UnsetCallback(typeof(T));
-        }
-
-        public void HandleMessage(Message msg)
-        {
-            int typeId = msg.TypeId;
-            // TODO: encapsulate this in a try block and throwing a custom exception
-            typesIds[types[typeId]].action.Invoke(msg.Object);
-        }
-
-        public Message CreateMessage(Type t, object obj, long serial)
-        {
-            return new Message(typesIds[t].id, obj, serial);
-        }
-
-        public Message CreateMessage<T>(T obj, long serial)
-        {
-            return CreateMessage(typeof(T), obj, serial);
-        }
-
-        public Message CreateCustomMessage(object obj, long serial, int id = -1)
-        {
-            return new Message(id, obj, serial);
+            return new Message<T>(command, obj, serial);
         }
     }
 }

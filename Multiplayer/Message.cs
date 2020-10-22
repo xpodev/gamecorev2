@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Net;
 
 namespace GameCore.Multiplayer
 {
     [Serializable]
     [Serialization.SerializeBinary]
-    public struct Message
+    public class Message<T> where T : Enum
     {
         public long Serial
         {
@@ -12,7 +13,7 @@ namespace GameCore.Multiplayer
             private set;
         }
 
-        public int TypeId
+        public T CommandId
         {
             get;
             private set;
@@ -30,12 +31,33 @@ namespace GameCore.Multiplayer
             private set;
         }
 
-        public Message(int id, object obj, long serial)
+        public Message(T id, object obj, long serial)
         {
-            TypeId = id;
+            CommandId = id;
             Object = obj;
-            TimeStamp = Protocol.CurrentProtocol.Clock.GetTimeStamp();
+            TimeStamp = Protocol<T>.CurrentProtocol.Clock.GetTimeStamp();
             Serial = serial;
+        }
+    }
+
+    public class MessageInfo<T> where T : Enum
+    {
+        public Message<T> Message
+        {
+            get;
+            private set;
+        }
+
+        public IPEndPoint EndPoint
+        {
+            get;
+            private set;
+        }
+
+        public MessageInfo(Message<T> msg, IPEndPoint endPoint)
+        {
+            Message = msg;
+            EndPoint = endPoint;
         }
     }
 }

@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace GameServer
 {
-    using SerialType = Int64;
-
     public class ClientManager
     {
-        private readonly Dictionary<SerialType, ClientHandler> clients = new Dictionary<SerialType, ClientHandler>();
+        private readonly Dictionary<long, ClientInfo> clients = new Dictionary<long, ClientInfo>();
 
         public static ClientManager CurrentManager
         {
@@ -19,15 +15,14 @@ namespace GameServer
             private set;
         }
 
-        public ClientManager()
+        internal ClientManager()
         {
             CurrentManager = this;
         }
 
-        public ClientHandler AddClient(ClientInfo info)
+        public void AddClient(ClientInfo info)
         {
             info.SetSerial(GenerateUniqueSerial(info));
-            ClientHandler handler = new ClientHandler(info);
             if (!info.IsValid())
             {
                 throw new Exception($"Error: client joined, but SerialGenerator returned an invalid serial: {info.Serial} ({info.ClientEndPoint.Address}:{info.ClientEndPoint.Port})");
@@ -36,8 +31,7 @@ namespace GameServer
             {
                 throw new Exception($"A client tried to join with duplicate serial: {info.Serial}");
             }
-            clients.Add(info.Serial, handler);
-            return handler;
+            clients.Add(info.Serial, info);
         }
 
         public void RemoveClient(ClientInfo info)
@@ -45,7 +39,7 @@ namespace GameServer
             clients.Remove(info.Serial);
         }
 
-        private static SerialType GenerateUniqueSerial(ClientInfo info)
+        private static long GenerateUniqueSerial(ClientInfo info)
         {
             byte[] serial = new byte[8];
             IPEndPoint ep = info.ClientEndPoint;

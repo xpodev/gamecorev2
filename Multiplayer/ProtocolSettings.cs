@@ -7,7 +7,7 @@ namespace GameCore.Multiplayer
 {
     [Serializable]
     [SerializeBinary]
-    public class ProtocolSettings
+    public class ProtocolSettings<T> where T : Enum
     {
         public Version Version
         {
@@ -23,7 +23,7 @@ namespace GameCore.Multiplayer
             private set;
         }
 
-        public Type[] RegisteredTypes
+        public Type EnumType
         {
             get;
             private set;
@@ -32,8 +32,8 @@ namespace GameCore.Multiplayer
         public ProtocolSettings(IPEndPoint endPoint)
         {
             GameServerEndPoint = endPoint;
-            Version = Protocol.Version;
-            RegisteredTypes = Protocol.CurrentProtocol.GetResiteredTypes();
+            Version = Protocol<T>.Version;
+            EnumType = typeof(T);
         }
     }
 }

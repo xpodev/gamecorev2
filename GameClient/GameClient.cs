@@ -4,9 +4,10 @@ using System;
 using System.Net.Sockets;
 
 
+
 namespace GameClient
 {
-    public class GameClient
+    public class GameClient<T> where T : Enum
     {
         private UdpClient udp;
 
@@ -18,7 +19,7 @@ namespace GameClient
 
         public GameClient()
         {
-            Protocol.Instantiate(new DefaultClock());
+            Protocol<T>.Instantiate(new DefaultClock());
         }
 
         public void ConnectToServer(string host, short port)
@@ -29,11 +30,11 @@ namespace GameClient
             byte[] buffer = new byte[4096];
             client.GetStream().Read(buffer, 0, buffer.Length);
             BinarySerializer serializer = new BinarySerializer();
-            Message msg = serializer.Deserialize<Message>(buffer);
+            Message<T> msg = serializer.Deserialize<Message<T>>(buffer);
 
-            ProtocolSettings protocolSettings = (ProtocolSettings)msg.Object;
+            ProtocolSettings<T> protocolSettings = (ProtocolSettings<T>)msg.Object;
 
-            if (!Protocol.CurrentProtocol.ValidateProtocolSettings(protocolSettings))
+            if (!Protocol<T>.CurrentProtocol.ValidateProtocolSettings(protocolSettings))
             {
                 throw new Exception("Protocol settings mismatch");
             }
@@ -53,9 +54,9 @@ namespace GameClient
             Serial = 0;
         }
 
-        public void Send<T>(T obj)
+        public void Send<TObject>(T command, TObject obj)
         {
-            Message msg =Protocol.CurrentProtocol.CreateMessage(obj, Serial);
+            Message<T> msg = Protocol<T>.CurrentProtocol.CreateMessage(command, obj, Serial);
             BinarySerializer serializer = new BinarySerializer();
             byte[] data = serializer.Serialize(msg);
             udp.Send(data, data.Length);

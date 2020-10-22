@@ -13,24 +13,17 @@ namespace GameServer
     {
         static void Main(string[] args)
         {
+            // load server configuration
             string json = File.ReadAllText("ServerConfiguration.json");
             ServerSettings settings = JsonConvert.DeserializeObject<ServerSettings>(json);
 
-            Console.WriteLine($"[Application][Server] Binding on {settings.IpAddress}:{settings.Port}");
-            JoinServer joinServer = new JoinServer(settings);
+            // create game server
 
-            joinServer.SetHandler(new ClientJoinRequestHandler());
+            // open pipe, begin Local Database Thread (async Task)
 
-            joinServer.OnClientJoin += (info) => Console.WriteLine($"Client Joined [{info.ClientInfo.ClientEndPoint}] Serial: {info.ClientInfo.Serial}");
+            // begin send loop (async Task)
 
-            ClientManager manager = new ClientManager();
-            
-            Protocol.Instantiate(new DefaultClock());
-
-            while (true)
-            {
-                joinServer.ReceiveClient(manager);
-            }
+            // receive loop (Main Thread)
         }
     }
 }

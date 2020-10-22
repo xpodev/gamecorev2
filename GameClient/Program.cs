@@ -4,13 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ServerType = GameClient.A;
+
 namespace GameClient
 {
+    enum A
+    {
+
+    }
+
     class Program
     {
         public static void Main(string[] args)
         {
-            GameClient client = new GameClient();
+            GameClient<ServerType> client = new GameClient<ServerType>();
             while (true)
             {
                 try

@@ -1,10 +1,11 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 
 namespace GameCore.Multiplayer
 {
-    interface ISendMessage
+    interface ISendMessage<T> where T : Enum
     {
-        void SendMessage(Message msg, IPEndPoint endPoint);
+        void SendMessage(Message<T> msg, IPEndPoint endPoint);
     }
 }

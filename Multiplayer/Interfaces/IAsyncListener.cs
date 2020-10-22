@@ -3,9 +3,9 @@
 
 namespace GameCore.Multiplayer
 {
-    interface IAsyncListener
+    interface IAsyncListener<T> where T : Enum
     {
-        event Action<Message> OnReceive;
+        event Protocol<T>.MessageHandler OnReceive;
 
         bool IsRunning
         {

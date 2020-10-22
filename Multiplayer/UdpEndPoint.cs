@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace GameCore.Multiplayer
 {
-    class UdpEndPoint : UdpClient, IAsyncListener, ISendMessage
+    class UdpEndPoint<T> : UdpClient, IAsyncListener<T>, ISendMessage<T> where T : Enum
     {
         public bool IsRunning
         {
@@ -57,7 +57,7 @@ namespace GameCore.Multiplayer
             }
         }
 
-        public event Action<Message> OnReceive;
+        public event Protocol<T>.MessageHandler OnReceive;
 
         private void BeginReceive(AsyncState state)
         {
@@ -76,7 +76,7 @@ namespace GameCore.Multiplayer
             state.Complete();
 
             BinarySerializer serializer = new BinarySerializer();
-            Message msg = serializer.Deserialize<Message>(state.Buffer);
+            Message<T> msg = serializer.Deserialize<Message<T>>(state.Buffer);
 
             if (OnReceive != null)
             {
@@ -112,7 +112,7 @@ namespace GameCore.Multiplayer
             IsRunning = false;
         }
 
-        public void SendMessage(Message msg, IPEndPoint endPoint)
+        public void SendMessage(Message<T> msg, IPEndPoint endPoint)
         {
             BinarySerializer serializer = new BinarySerializer();
             byte[] data = serializer.Serialize(msg);
