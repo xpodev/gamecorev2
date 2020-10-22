@@ -1,0 +1,16 @@
+{
+	"name": "com.xpo-development.gamecore.scripting.python",
+	"displayName": "Python Environment",
+	"version": "1.0.0",
+	"keywords": [
+		"python",
+		"environment",
+		"gamecore",
+		"scripting"
+	],
+	"author": {
+		"name": "Xpo Development"
+	},
+	"description": "Module: GameCore.PythonEnvironment. \nThis module can be used to add in-game scripting using python.",
+	"category": "GameCore"
+}

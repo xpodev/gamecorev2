@@ -1,0 +1,36 @@
+GameCoreV1 (AKA GameCore) is a game-system developed in unity that provides ModSupport and Logging
+
+(?) means that the item might not be included in the final product
+ND = "Not Defined" which means the API is not yet defined
+DONE = The feature is done
+WIP = The feature is currently in progress
+TODO = The feature needs more features
+
+GameCoreV2 for Unity is supposed to be a better version that brings more features:
+1) Game modding (with Mdp auto update & auto install) using ModuleManager	[DONE, WIP]
+2) System Management (with many built-in systems) 				[DONE, WIP]
+3) Logging (included in System Management)					[WIP, TODO]
+4) Object Database								[DONE, WIP]
+5) Multiplayer interface (maybe some another library that supports that)	[WIP]
+6) Provides some basic interfaces for common object types
+7) World generation
+8) Extendable core (?)
+9) Unity editor integration (with custom editor builder(?))
+10) Adds Unity objects serialization (binary, semi binary, json)
+11) Adds Mdp support (Mdp is a library used for updating purposes)		[DONE, TODO]
+12) Supports custom calendars & scheduled events
+13) Game launcher (?)
+14) Configurable modules (?)
+15) ConfigParser
+16) Controls config file reader
+17) Many MonoBehaviour classes to get you started quickly
+18) Mdp server manager (with Unity editor integration (?))
+19) Customizable xml based configurators					[DONE, WIP]
+20) building systems (grid, free, free_snap)
+21) In-game scripting (python)							[DONE]
+22) Game console (for commands. eg. for minecraft: /time set 0)
+
+About NodeEditor: it already exists. search for "Unity visual scripting" (Bolt)
+
+GameCoreV2 is very well documented
+

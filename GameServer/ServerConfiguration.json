@@ -1,0 +1,7 @@
+{
+  "ServerName": "MyServer",
+  "IpAddress": "127.0.0.1",
+  "Port": 5060,
+  "InBufferSize": 4096,
+  "OutBufferSize": 4096
+}

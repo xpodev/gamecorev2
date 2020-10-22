@@ -1,0 +1,23 @@
+{
+  "CurrentConfiguration": "ModPack2",
+  "Configurations": [
+    {
+      "Name": "ModPack",
+      "ConfigurationFile": "ModPack.xml",
+      "ParentDirectory": "ModPack",
+      "Mods": [
+        "GameCore",
+        "RealDragons",
+        "TNT",
+        "BlowUpMyPC"
+      ]
+    },
+    {
+      "Name": "ModPack2",
+      "ConfigurationFile": "ModPack.xml",
+      "ParentDirectory": "ModPack",
+      "Mods": [
+      ]
+    }
+  ]
+}
