@@ -29,6 +29,7 @@ GameCoreV2 for Unity is supposed to be a better version that brings more feature
 20) building systems (grid, free, free_snap)
 21) In-game scripting (python)							[DONE]
 22) Game console (for commands. eg. for minecraft: /time set 0)
+23) Localization (that works perfectly with the Database)
 
 About NodeEditor: it already exists. search for "Unity visual scripting" (Bolt)
 
