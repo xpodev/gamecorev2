@@ -203,7 +203,7 @@ namespace GameCore.ModLoader
                 CurrentMod = modInfo;
                 foreach (Assembly assembly in assetManager.GetModAssets(modInfo.Name).GetResources<Assembly>())
                 {
-                    Type modType = assembly.GetTypes().Where(t => t.IsAssignableFrom(typeof(Mod))).FirstOrDefault();
+                    Type modType = assembly.GetTypes().Where(t => typeof(Mod).IsAssignableFrom(t)).FirstOrDefault();
                     if (modType is null)
                     {
                         continue;
@@ -218,6 +218,7 @@ namespace GameCore.ModLoader
         private void NextState()
         {
             State++;
+            CurrentMod = null;
         }
 
         private ModInfo[] GetMods(string path)
@@ -226,7 +227,7 @@ namespace GameCore.ModLoader
             for (int i = 0; i < mods.Length; i++)
             {
                 string modFolder = Path.Combine(path, Configuration.ParentDirectory, Configuration.Mods[i]);
-                string name = Path.GetDirectoryName(modFolder);
+                string name = Path.GetFileName(Path.GetDirectoryName(modFolder));
                 ModInfo mod = new ModInfo(i, modFolder, name);
                 mods[i] = mod;
             }

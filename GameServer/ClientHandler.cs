@@ -29,13 +29,13 @@ namespace GameServer
             client.BeginSendObject(obj, ClientInfo.Serial);
         }
 
-        public void OnReceiveMessage(Message msg)
+        public void OnReceiveMessage<T>(Message<T> msg) where T : Enum
         {
             if (msg.Serial != ClientInfo.Serial)
             {
                 return;
             }
-            Protocol.CurrentProtocol.HandleMessage(msg);
+            Protocol<T>.CurrentProtocol.HandleMessage(msg);
         }
 
         public void RunClient()

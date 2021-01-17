@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>GameCore.Net</RootNamespace>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ClientConnectionTCP.cs" />
+    <Compile Remove="ServerConnectionTCP.cs" />
+  </ItemGroup>
+
+</Project>

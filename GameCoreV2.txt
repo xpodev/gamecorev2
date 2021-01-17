@@ -31,7 +31,9 @@ GameCoreV2 for Unity is supposed to be a better version that brings more feature
 22) Game console (for commands. eg. for minecraft: /time set 0)
 23) Localization (that works perfectly with the Database)
 
-About NodeEditor: it already exists. search for "Unity visual scripting" (Bolt)
+About NodeEditor: it already exists. search for "Unity visual scripting" (Bolt, which  isn't very good)
 
 GameCoreV2 is very well documented
+
+Currently, the only way to load prefabs is using AssetBundles.
 

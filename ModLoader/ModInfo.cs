@@ -13,6 +13,7 @@ namespace GameCore.ModLoader
             Id = id;
             Directory = dir;
             Name = name;
+            Enabled = true;
         }
 
         public int Id

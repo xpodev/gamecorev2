@@ -8,6 +8,14 @@
             private set;
         }
 
+        public AssetManager AssetManager
+        {
+            get
+            {
+                return ModLoader.CurrentLoader.ModuleManager.GetModule<AssetManager>();
+            }
+        }
+
         public void SetInfo(ModInfo info)
         {
             Info = info;

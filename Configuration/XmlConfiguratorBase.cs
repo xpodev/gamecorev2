@@ -45,7 +45,7 @@ namespace GameCore.Configuration
                 actions[node.Name].Invoke(this, node);
             } catch (KeyNotFoundException)
             {
-                if (defaultAction == null)
+                if (defaultAction is null)
                 {
                     throw new ArgumentException($"The input node \"{node.Name}\" type is not recognized");
                 }
@@ -63,9 +63,14 @@ namespace GameCore.Configuration
 
         public void ExecuteFromPath(string path)
         {
-            XmlDocument xml = new XmlDocument();
-            xml.Load(path);
-            ExecuteDocument(xml.DocumentElement);
+            XmlReaderSettings readerSettings = new XmlReaderSettings();
+            readerSettings.IgnoreComments = true;
+            using (XmlReader reader = XmlReader.Create(path, readerSettings))
+            {
+                XmlDocument xml = new XmlDocument();
+                xml.Load(path);
+                ExecuteDocument(xml.DocumentElement);
+            }
         }
     }
 }
