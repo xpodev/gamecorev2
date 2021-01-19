@@ -8,7 +8,7 @@ namespace GameCore.Net.Server
     {
         private BlockingCollection<OwnedMessage<T>> m_qIncomingMessages = new BlockingCollection<OwnedMessage<T>>();
 
-        public int UID
+        public ulong UID
         {
             get;
             protected set;
@@ -19,9 +19,9 @@ namespace GameCore.Net.Server
             m_qIncomingMessages = queue;
         }
 
-        public bool ConnectToClient(int uid)
+        public bool ConnectToClient(ulong uid, bool connectionLess = false)
         {
-            if (Connected)
+            if (Connected || connectionLess)
             {
                 UID = uid;
                 OnConnectToClient();

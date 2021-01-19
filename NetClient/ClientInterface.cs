@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameCore.Net.Client
 {
-    public class ClientInterface<T> where T : struct, Enum
+    public class ClientInterface<T, SocketType> where T : struct, Enum where SocketType : NetSocket, new()
     {
         private ClientConnection<T> m_rConnection;
 
@@ -51,7 +51,7 @@ namespace GameCore.Net.Client
             {
                 IPAddress[] ips = Dns.GetHostEntry(host).AddressList;
 
-                m_rConnection = new ClientConnection<T>();
+                m_rConnection = new ClientConnection<T>(new SocketType());
 
                 for (int i = 0; i < ips.Length; ++i)
                 {

@@ -11,9 +11,9 @@ namespace GameCore.Net
     {
         protected Socket m_rSocket;
 
-        protected Message<T> m_vTmpMessage;
-
         protected BlockingCollection<Message<T>> m_qOutgoingMessages = new BlockingCollection<Message<T>>();
+
+        protected EndPoint m_rRemoteEndPoint = new IPEndPoint(0, 0);
 
         public BlockingCollection<Message<T>> OutgoingMessages
         {
@@ -23,6 +23,8 @@ namespace GameCore.Net
             }
         }
 
+        protected Message<T> m_vTmpMessage;
+
         public bool Connected
         {
             get
@@ -31,15 +33,26 @@ namespace GameCore.Net
             }
         }
 
-        public Connection()
+        public EndPoint EndPoint
         {
-            m_rSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            get
+            {
+                return m_rRemoteEndPoint;
+            }
+            set
+            {
+                m_rRemoteEndPoint = value;
+            }
         }
 
         public Connection(Socket socket)
         {
-            System.Diagnostics.Debug.Assert(socket.ProtocolType == ProtocolType.Tcp);
             m_rSocket = socket;
+        }
+
+        public void Close()
+        {
+            m_rSocket.Close();
         }
 
         public void BeginListen()
@@ -61,79 +74,105 @@ namespace GameCore.Net
         {
             if (Connected)
             {
-                m_rSocket.Close();
+                Close();
             }
         }
 
-        private void ReadHeader()
+        protected void ReadHeader()
         {
             byte[] buffer = new byte[Marshal.SizeOf(m_vTmpMessage.Header)];
-            SocketError socketError = default;
-            m_rSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, out socketError, (result) =>
+            try
             {
-                int readBytesCount = m_rSocket.EndReceive(result);
-                Console.WriteLine("Received " + readBytesCount + " Bytes");
-                if (socketError == SocketError.Success)
+                m_rSocket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.Partial, ref m_rRemoteEndPoint, (result) =>
                 {
-                    m_vTmpMessage = Message<T>.FromBytes(buffer);
-                    if (m_vTmpMessage.Header.Size > 0)
+                    try
                     {
-                        ReadBody();
-                    }
-                    else
+                        int readBytesCount = m_rSocket.EndReceiveFrom(result, ref m_rRemoteEndPoint);
+                        m_vTmpMessage = Message<T>.FromBytes(buffer);
+                        if (m_vTmpMessage.Header.Size > 0)
+                        {
+                            ReadBody();
+                        }
+                        else
+                        {
+                            AddToIncomingMessages();
+                        }
+                    } catch (SocketException)
                     {
-                        AddToIncomingMessages();
+                        Close();
                     }
-                }
-                else
-                {
-                    Console.WriteLine($"ReadHeader Failed: ({socketError})");
-                }
-            }, this);
+                }, this);
+
+            } catch (SocketException)
+            {
+                Close();
+            }
         }
 
-        private void ReadBody()
+        protected void ReadBody()
         {
             byte[] buffer = new byte[m_vTmpMessage.Header.Size];
-            SocketError socketError = default;
-            m_rSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, out socketError, (result) =>
+            try
             {
-                int readBytesCount = m_rSocket.EndReceive(result);
-                if (socketError == SocketError.Success)
+                m_rSocket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref m_rRemoteEndPoint, (result) =>
                 {
-                    m_vTmpMessage.Insert(buffer);
-                    AddToIncomingMessages();
-                }
-                else
-                {
-                    Console.WriteLine($"ReadBody Failed: ({socketError})");
-                }
-            }, this);
-        }
-
-        private void WriteMessage()
-        {
-            Message<T> msg = m_qOutgoingMessages.Take();
-            byte[] bytes = msg.GetBytes();
-            SocketError socketError = default;
-            m_rSocket.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, out socketError, (result) =>
-            {
-                int writeBytesCount = m_rSocket.EndSend(result);
-                if (socketError == SocketError.Success)
-                {
-                    if (m_qOutgoingMessages.Count > 0)
+                    try
                     {
-                        WriteMessage();
+                        int readBytesCount = m_rSocket.EndReceive(result);
+                        m_vTmpMessage.Insert(buffer);
+                        AddToIncomingMessages();
+                    } catch (SocketException)
+                    {
+                        Close();
                     }
-                }
-                else
-                {
-                    Console.WriteLine($"WriteMessage Failed: ({socketError})");
-                }
-            }, this);
+                }, this);
+            } catch (SocketException)
+            {
+                Close();
+            }
         }
 
-        protected internal virtual void AddToIncomingMessages()
+        protected void WriteMessage()
+        {
+            m_vTmpMessage = m_qOutgoingMessages.Take();
+            byte[] bytes = m_vTmpMessage.GetBytes();
+            int size = Marshal.SizeOf(m_vTmpMessage.Header);
+            try
+            {
+                m_rSocket.BeginSendTo(bytes, 0, size, SocketFlags.None, m_rRemoteEndPoint, (result) =>
+                {
+                    try
+                    {
+                        int writeHeaderCount = m_rSocket.EndSendTo(result);
+                        if (m_vTmpMessage.Header.Size > 0)
+                        {
+                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (result) =>
+                            {
+                                try
+                                {
+                                    int writeBodyCount = m_rSocket.EndSendTo(result);
+                                    if (m_qOutgoingMessages.Count > 0)
+                                    {
+                                        WriteMessage();
+                                    }
+                                } catch (SocketException)
+                                {
+                                    Close();
+                                }
+                            }, this);
+                        }
+                    } catch (SocketException e)
+                    {
+                        Close();
+                    }
+                }, this);
+            } catch (SocketException)
+            {
+                Close();
+            }
+        }
+
+        protected virtual void AddToIncomingMessages()
         {
             ReadHeader();
         }

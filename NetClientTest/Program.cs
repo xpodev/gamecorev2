@@ -12,7 +12,7 @@ namespace NetClientTest
         Chat
     }
 
-    class MyClient : ClientInterface<CMD>
+    class MyClient : ClientInterface<CMD, NetSocketUDP>
     {
         public void Process()
         {
@@ -24,7 +24,7 @@ namespace NetClientTest
                 switch (message.Header.Id)
                 {
                     case CMD.Chat:
-                        Console.WriteLine("Chat: " + message.Extract<NetString<CMD>>());
+                        Console.WriteLine("Chat: " + message.Extract<UTF8String>());
                         break;
                     default:
                         Console.WriteLine($"Unknown command: {message.Header.Id}");
@@ -33,7 +33,7 @@ namespace NetClientTest
             }
         }
 
-        public void SendChat(NetString<CMD> msg)
+        public void SendChat(UTF8String msg)
         {
             Message<CMD> message = new Message<CMD>(CMD.Chat);
             message.Insert(msg);
@@ -61,7 +61,7 @@ namespace NetClientTest
 
             while (true)
             {
-                client.SendChat(new NetString<CMD>(Console.ReadLine()));
+                client.SendChat(new UTF8String(Console.ReadLine()));
             }
         }
     }

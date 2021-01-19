@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameCore.Net.Server
 {
@@ -10,6 +6,6 @@ namespace GameCore.Net.Server
     {
         public Message<T> message;
 
-        public int UID;
+        public ulong UID;
     }
 }

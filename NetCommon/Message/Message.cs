@@ -33,9 +33,9 @@ namespace GameCore.Net
             }
         }
 
-        public Message<T> Insert(ICustomInsert<T> customInsert)
+        public Message<T> Insert(CustomMessageHandler customInsert)
         {
-            customInsert.Insert(this);
+            customInsert.InsertInto(this);
             return this;
         }
 
@@ -47,28 +47,32 @@ namespace GameCore.Net
 
         public Message<T> Insert<InT>(InT value) where InT : struct
         {
-            if (typeof(InT).IsAssignableTo(typeof(ICustomInsert<T>)))
-            {
-                return Insert((ICustomInsert<T>)value);
-            }
             data.AddRange(value.GetBytes());
             return this;
         }
 
-        public Message<T> Extract(ICustomExtract<T> customExtract)
+        public OutT Extract<OutT>() where OutT : CustomMessageHandler, new()
         {
-            customExtract.Extract(this);
+            OutT customExtract = new OutT();
+            customExtract.ExtractFrom(this);
+            return customExtract;
+        }
+
+        public Message<T> Extract<OutT>(out OutT outT) where OutT : CustomMessageHandler, new()
+        {
+            outT = Extract<OutT>();
+            return this;
+        }
+
+        public Message<T> Extract<OutT>(out OutT outT, int offset = -1) where OutT : struct
+        {
+            outT = Extract<OutT>(offset);
             return this;
         }
 
         public OutT Extract<OutT>(int offset = -1) where OutT : struct
         {
             OutT outT = default;
-            if (typeof(OutT).IsAssignableTo(typeof(ICustomInsert<T>)))
-            {
-                Extract((ICustomExtract<T>)outT);
-                return outT;
-            }
             int size;
 
             if (typeof(OutT).IsEnum)
@@ -93,12 +97,6 @@ namespace GameCore.Net
             data.RemoveRange(offset, size);
 
             return buffer.FromBytes<OutT>();
-        }
-
-        public Message<T> Extract<OutT>(out OutT outT, int offset = -1) where OutT : struct
-        {
-            outT = Extract<OutT>(offset);
-            return this;
         }
 
         public byte[] ExtractBytes(int length)

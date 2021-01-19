@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Sockets;
 
 namespace GameCore.Net.Client
 {
@@ -16,19 +17,33 @@ namespace GameCore.Net.Client
             }
         }
 
+        public ClientConnection(NetSocket socket) : base(socket)
+        {
+
+        }
+
         public void ConnectToServer(EndPoint endPoint)
         {
-            //m_rSocket.BeginConnect(endPoint, (result) =>
-            //{
-            //    m_rSocket.EndConnect(result);
-            //    if (Connected)
-            //    {
-            //        OnConnectToServer();
-            //    }
-            //}, this);
-            m_rSocket.Connect(endPoint);
+            IPEndPoint ipEndPoint = (IPEndPoint)endPoint;
+            try
+            {
+                if (ipEndPoint.Address.ScopeId == 0)
+                {
+                    return;
+                }
+            } catch (SocketException)
+            {
+                
+            }
+            m_rSocket.Connect(ipEndPoint);
             if (Connected)
             {
+                m_rRemoteEndPoint = ipEndPoint;
+                if (m_rSocket.ProtocolType == ProtocolType.Udp)
+                {
+                    Send(new Message<T>());
+                    WriteMessage();
+                }
                 OnConnectToServer();
             }
         }

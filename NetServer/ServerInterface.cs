@@ -10,23 +10,51 @@ using System.Threading.Tasks;
 
 namespace GameCore.Net.Server
 {
-    public class ServerInterface<T> where T : struct, Enum
+    public class ServerInterface<T, SocketType> where T : struct, Enum where SocketType : NetSocket, new()
     {
         private EndPoint m_rEndPoint;
         private Socket m_rSocket;
 
-        private int m_nIDCounter = 10000;
+        private ulong m_nCurrentUID = 10000;
 
-        private Dictionary<int, ServerConnection<T>> m_qConnections = new Dictionary<int, ServerConnection<T>>();
+        protected ulong CurrentUID
+        {
+            get
+            {
+                return m_nCurrentUID;
+            }
+            set
+            {
+                m_nCurrentUID = value;
+            }
+        }
+
+        public EndPoint LocalEndPoint
+        {
+            get
+            {
+                return m_rEndPoint;
+            }
+        }
+
+        private ServerConnection<T> m_rUDPConnection;
+
+        private Dictionary<ulong, ServerConnection<T>> m_qConnections = new Dictionary<ulong, ServerConnection<T>>();
 
         private BlockingCollection<OwnedMessage<T>> m_qIncomingMessages = new BlockingCollection<OwnedMessage<T>>();
 
-        public ServerInterface(ushort port)
+        public ServerInterface(EndPoint mainServerLocalEndPoint)
         {
-            m_rEndPoint = new IPEndPoint(IPAddress.Any, port);
-            m_rSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            m_rEndPoint = mainServerLocalEndPoint;
+            m_rSocket = new SocketType();
             m_rSocket.Bind(m_rEndPoint);
-            m_rSocket.Listen();
+            if (m_rSocket.ProtocolType == ProtocolType.Tcp)
+            {
+                m_rSocket.Listen();
+            } else
+            {
+                m_rUDPConnection = new ServerConnection<T>(m_qIncomingMessages, m_rSocket);
+            }
         }
 
         ~ServerInterface()
@@ -36,12 +64,18 @@ namespace GameCore.Net.Server
 
         public void Start()
         {
-            WaitForClientConnection();
+            if (m_rSocket.ProtocolType == ProtocolType.Udp)
+            {
+                m_rUDPConnection.BeginListen();
+            } else
+            {
+                WaitForClientConnection();
+            }
         }
 
         public void Stop()
         {
-
+            m_rSocket.Close();
         }
 
         public void MessageClient(ServerConnection<T> connection, Message<T> message)
@@ -49,7 +83,8 @@ namespace GameCore.Net.Server
             if (connection is not null && connection.Connected)
             {
                 connection.Send(message);
-            } else
+            }
+            else if (m_rSocket.ProtocolType == ProtocolType.Tcp)
             {
                 OnClientDisconnect(connection);
                 // NullReferenceException may be thrown here
@@ -60,27 +95,43 @@ namespace GameCore.Net.Server
         public void MessageAllClients(Message<T> message, ServerConnection<T> ignore = null)
         {
 
-            List<int> invalidClients = new List<int>();
-
-            foreach (ServerConnection<T> connection in m_qConnections.Values)
+            List<ulong> invalidClients = new List<ulong>();
+            if (m_rSocket.ProtocolType == ProtocolType.Tcp)
             {
-                if (connection is not null && connection.Connected)
+                foreach (ServerConnection<T> connection in m_qConnections.Values)
                 {
-                    if (connection != ignore)
+                    if (connection is not null && connection.Connected)
                     {
-                        connection.Send(message);
+                        if (connection != ignore)
+                        {
+                            connection.Send(message);
+                        }
                     }
-                } else
+                    else
+                    {
+                        OnClientDisconnect(connection);
+                        invalidClients.Add(connection.UID);
+                    }
+                }
+
+                foreach (ulong uid in invalidClients)
                 {
-                    OnClientConnect(connection);
-                    invalidClients.Add(connection.UID);
+                    m_qConnections.Remove(uid);
+                }
+            } else
+            {
+                foreach (ServerConnection<T> connection in m_qConnections.Values)
+                {
+                    if (connection is not null)
+                    {
+                        if (connection != ignore)
+                        {
+                            connection.Send(message);
+                        }
+                    }
                 }
             }
-
-            foreach (int uid in invalidClients)
-            {
-                m_qConnections.Remove(uid);
-            }
+            
         }
 
         public void Update(uint maxMessages = uint.MaxValue)
@@ -99,6 +150,11 @@ namespace GameCore.Net.Server
                     break;
                 }
             }
+        }
+
+        protected virtual ulong GetNextUID(ulong oldUID)
+        {
+            return oldUID + 1;
         }
 
         protected virtual bool OnClientConnect(ServerConnection<T> connection)
@@ -120,16 +176,17 @@ namespace GameCore.Net.Server
         {
             m_rSocket.BeginAccept((result) =>
             {
-                Socket client = ((Socket)result.AsyncState).EndAccept(result);
+                Socket client = ((SocketType)result.AsyncState).EndAccept(result);
                 ServerConnection<T> connection = new ServerConnection<T>(m_qIncomingMessages, client);
                 if (OnClientConnect(connection))
                 {
-                    if (connection.ConnectToClient(m_nIDCounter++))
+                    if (connection.ConnectToClient((m_nCurrentUID = GetNextUID(m_nCurrentUID))))
                     {
                         m_qConnections.Add(connection.UID, connection);
                         connection.BeginListen();
                         Console.WriteLine($"[{connection.UID}] Connection Approved");
-                    } else
+                    }
+                    else
                     {
                         Console.WriteLine($"[-----] Connection Denied");
                     }
@@ -137,6 +194,35 @@ namespace GameCore.Net.Server
 
                 WaitForClientConnection();
             }, m_rSocket);
+        }
+
+        public void AddClient(ServerConnection<T> connection, bool nextUID = false)
+        {
+            m_qConnections.Add(connection.UID, connection);
+            if (nextUID)
+            {
+                m_nCurrentUID = GetNextUID(m_nCurrentUID);
+            }
+        }
+
+        public ServerConnection<T> CreateConnection(Socket socket, bool autoAdd = true, bool autoUID = false, ulong uid = 0)
+        {
+            ServerConnection<T> serverConnection = new ServerConnection<T>(m_qIncomingMessages, socket);
+
+            if (serverConnection.ConnectToClient(autoUID ? m_nCurrentUID : uid, socket.ProtocolType == ProtocolType.Udp))
+            {
+                if (autoAdd)
+                {
+                    AddClient(serverConnection, autoUID);
+                }
+                return serverConnection;
+            }
+            return null;
+        }
+
+        public void RemoveClient(ulong uid)
+        {
+            m_qConnections.Remove(uid);
         }
     }
 }
