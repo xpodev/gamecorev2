@@ -32,7 +32,11 @@ namespace GameCore.Net.Client
         {
             get
             {
+#if NET5_0
                 if (m_rConnection is not null)
+#else
+                if (m_rConnection != null)
+#endif
                 {
                     return m_rConnection.Connected;
                 }

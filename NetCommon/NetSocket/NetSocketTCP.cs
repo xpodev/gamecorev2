@@ -4,7 +4,7 @@ namespace GameCore.Net
 {
     public class NetSocketTCP : NetSocket
     {
-        public NetSocketTCP() : base(SocketType.Stream, ProtocolType.Tcp)
+        public NetSocketTCP() : base(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
         {
 
         }

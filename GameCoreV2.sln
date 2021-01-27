@@ -3,35 +3,38 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCoreV2", "GameCoreV2\GameCoreV2.csproj", "{A6572F79-3B81-4E49-A951-D07397BDC4F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameCoreV2", "GameCoreV2\GameCoreV2.csproj", "{A6572F79-3B81-4E49-A951-D07397BDC4F5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9E11E15E-DE02-4D8B-A7DB-8D83F89385BE} = {9E11E15E-DE02-4D8B-A7DB-8D83F89385BE}
 		{EA8CB6CC-2F43-40A2-B195-9E15358C476A} = {EA8CB6CC-2F43-40A2-B195-9E15358C476A}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Systems", "System\Systems.csproj", "{9E11E15E-DE02-4D8B-A7DB-8D83F89385BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Systems", "System\Systems.csproj", "{9E11E15E-DE02-4D8B-A7DB-8D83F89385BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MdpLib", "MdpLib\MdpLib.csproj", "{EA8CB6CC-2F43-40A2-B195-9E15358C476A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MdpLib", "MdpLib\MdpLib.csproj", "{EA8CB6CC-2F43-40A2-B195-9E15358C476A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemT", "SystemT\SystemT.csproj", "{138EFA49-C25B-40AF-A592-2B7B36AAC4E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModLoader", "ModLoader\ModLoader.csproj", "{5AAF4122-95BF-4036-B142-E827C1061248}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModLoader", "ModLoader\ModLoader.csproj", "{5AAF4122-95BF-4036-B142-E827C1061248}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A6572F79-3B81-4E49-A951-D07397BDC4F5} = {A6572F79-3B81-4E49-A951-D07397BDC4F5}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Configuration", "Configuration\Configuration.csproj", "{7940CF70-2163-4FB7-99B4-99E0F16DC46F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{7940CF70-2163-4FB7-99B4-99E0F16DC46F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TMdpGenerator", "TMdpGenerator\TMdpGenerator.csproj", "{DBFA755A-CBE3-4035-9E14-325F76908D1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization", "Serialization\Serialization.csproj", "{1B6954AE-08BC-4A78-9F03-CE4293AB3E78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serialization", "Serialization\Serialization.csproj", "{1B6954AE-08BC-4A78-9F03-CE4293AB3E78}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingSystems", "BuildingSystems", "{103872BB-491A-4021-B398-5C1803BB34A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grid", "BuildingSystems\Grid\Grid.csproj", "{AE08D4D3-3982-4F14-ACF0-0F25109D927E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grid", "BuildingSystems\Grid\Grid.csproj", "{AE08D4D3-3982-4F14-ACF0-0F25109D927E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameScripting", "GameScripting", "{A739C4CF-30D4-4DFD-9171-677C582AD54B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Python", "GameScripting\PythonScripting\Python.csproj", "{2C8633F0-8877-4276-85D7-672A7A522994}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Python", "GameScripting\PythonScripting\Python.csproj", "{2C8633F0-8877-4276-85D7-672A7A522994}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonEnvironment", "GameScripting\PythonEnvironment\PythonEnvironment.csproj", "{9D6BD084-CBC0-426F-92FF-A837792F030F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PythonEnvironment", "GameScripting\PythonEnvironment\PythonEnvironment.csproj", "{9D6BD084-CBC0-426F-92FF-A837792F030F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Multiplayer", "Multiplayer", "{950788CA-8651-4301-BB1E-7741952AD7EA}"
 EndProject

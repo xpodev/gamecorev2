@@ -13,11 +13,21 @@ namespace GameCore.Net.Extensions
             var v = Convert.ChangeType(value, enumType);
             if (enumType == typeof(char))
             {
+#if NET5_0
                 bytes = BitConverter.GetBytes((char)v).AsSpan(0, 1).ToArray();
+#else
+                bytes = BitConverter.GetBytes((char)v);
+                Array.Resize(ref bytes, 1);
+#endif
             }
             else if (enumType == typeof(byte))
             {
+#if NET5_0
                 bytes = BitConverter.GetBytes((byte)v).AsSpan(0, 1).ToArray();
+#else
+                bytes = BitConverter.GetBytes((byte)v);
+                Array.Resize(ref bytes, 1);
+#endif
             }
             else if (enumType == typeof(short))
             {
