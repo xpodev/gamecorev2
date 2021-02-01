@@ -139,35 +139,44 @@ namespace GameCore.Net
             int size = Marshal.SizeOf(m_vTmpMessage.Header);
             try
             {
+                System.Diagnostics.Debug.WriteLine("Writing Header");
                 m_rSocket.BeginSendTo(bytes, 0, size, SocketFlags.None, m_rRemoteEndPoint, (result) =>
                 {
                     try
                     {
                         int writeHeaderCount = m_rSocket.EndSendTo(result);
+                        System.Diagnostics.Debug.WriteLine("Writing Header: " + writeHeaderCount);
+
                         if (m_vTmpMessage.Header.Size > 0)
                         {
-                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (iresult) =>
+                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (result) =>
+                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (result2) =>
                             {
                                 try
                                 {
-                                    int writeBodyCount = m_rSocket.EndSendTo(iresult);
+                                    int writeBodyCount = m_rSocket.EndSendTo(result);
+                                    System.Diagnostics.Debug.WriteLine("Writing Body: " + writeBodyCount);
+
                                     if (m_qOutgoingMessages.Count > 0)
                                     {
                                         WriteMessage();
                                     }
                                 } catch (SocketException)
                                 {
+                                    throw;
                                     Close();
                                 }
                             }, this);
                         }
-                    } catch (SocketException e)
+                    } catch (SocketException)
                     {
+                        throw;
                         Close();
                     }
                 }, this);
             } catch (SocketException)
             {
+                throw;
                 Close();
             }
         }

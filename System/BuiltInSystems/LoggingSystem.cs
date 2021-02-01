@@ -64,7 +64,7 @@ namespace GameCore.Systems
         {
             proxyListener.LoggingSystem = this;
             proxyListener.Name = Name;
-            Debug.Listeners.Add(proxyListener);
+            Trace.Listeners.Add(proxyListener);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace GameCore.Systems
         /// <param name="listener"></param>
         public void AddListener(TraceListener listener)
         {
-            Debug.Listeners.Add(listener);
+            Trace.Listeners.Add(listener);
         }
 
         /// <summary>

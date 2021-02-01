@@ -4,7 +4,7 @@ namespace GameCore.Net
 {
     public class NetSocketUDP : NetSocket
     {
-        public NetSocketUDP() : base(SocketType.Dgram, ProtocolType.Udp)
+        public NetSocketUDP() : base(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
         {
 
         }

@@ -4,6 +4,6 @@ namespace GameCore.Net
 {
     public abstract class NetSocket : Socket
     {
-        public NetSocket(SocketType socketType, ProtocolType protocol) : base(socketType, protocol) { }
+        public NetSocket(AddressFamily family, SocketType socketType, ProtocolType protocol) : base(family, socketType, protocol) { }
     }
 }

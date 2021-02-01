@@ -43,14 +43,14 @@ namespace GameCore.Net.Server
 
         private BlockingCollection<OwnedMessage<T>> m_qIncomingMessages = new BlockingCollection<OwnedMessage<T>>();
 
-        public ServerInterface(EndPoint mainServerLocalEndPoint)
+        public ServerInterface(EndPoint mainServerLocalEndPoint, int backlog = 10)
         {
             m_rEndPoint = mainServerLocalEndPoint;
             m_rSocket = new SocketType();
             m_rSocket.Bind(m_rEndPoint);
             if (m_rSocket.ProtocolType == ProtocolType.Tcp)
             {
-                m_rSocket.Listen();
+                m_rSocket.Listen(backlog);
             } else
             {
                 m_rUDPConnection = new ServerConnection<T>(m_qIncomingMessages, m_rSocket);
@@ -80,7 +80,11 @@ namespace GameCore.Net.Server
 
         public void MessageClient(ServerConnection<T> connection, Message<T> message)
         {
+#if NET5_0
             if (connection is not null && connection.Connected)
+#else
+            if (connection != null && connection.Connected)
+#endif
             {
                 connection.Send(message);
             }
@@ -100,7 +104,11 @@ namespace GameCore.Net.Server
             {
                 foreach (ServerConnection<T> connection in m_qConnections.Values)
                 {
+#if NET5_0
                     if (connection is not null && connection.Connected)
+#else
+                    if (connection != null && connection.Connected)
+#endif
                     {
                         if (connection != ignore)
                         {
@@ -122,7 +130,11 @@ namespace GameCore.Net.Server
             {
                 foreach (ServerConnection<T> connection in m_qConnections.Values)
                 {
+#if NET5_0
                     if (connection is not null)
+#else
+                    if (connection != null)
+#endif
                     {
                         if (connection != ignore)
                         {

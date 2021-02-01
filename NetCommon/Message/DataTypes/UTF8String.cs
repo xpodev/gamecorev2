@@ -2,25 +2,10 @@
 
 namespace GameCore.Net
 {
-    public class UTF8String : StructArray<byte>
+    public class UTF8String : StringBase
     {
-        public UTF8String() : base(null) { }
+        public UTF8String() : base(Encoding.UTF8) { }
 
-        public string Text
-        {
-            get
-            {
-                return Encoding.ASCII.GetString(data);
-            }
-        }
-
-        public UTF8String(string str) : base(Encoding.UTF8.GetBytes(str))
-        {
-        }
-
-        public override string ToString()
-        {
-            return Text;
-        }
+        public UTF8String(string str) : base(str, Encoding.UTF8) { }
     }
 }

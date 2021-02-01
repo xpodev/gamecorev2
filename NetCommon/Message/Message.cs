@@ -124,6 +124,8 @@ namespace GameCore.Net
 
             data.ToArray().CopyTo(bytes, offset);
 
+            header.Size = data.Count;
+
             return bytes;
         }
 
