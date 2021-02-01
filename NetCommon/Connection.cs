@@ -146,11 +146,11 @@ namespace GameCore.Net
                         int writeHeaderCount = m_rSocket.EndSendTo(result);
                         if (m_vTmpMessage.Header.Size > 0)
                         {
-                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (result) =>
+                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (iresult) =>
                             {
                                 try
                                 {
-                                    int writeBodyCount = m_rSocket.EndSendTo(result);
+                                    int writeBodyCount = m_rSocket.EndSendTo(iresult);
                                     if (m_qOutgoingMessages.Count > 0)
                                     {
                                         WriteMessage();
