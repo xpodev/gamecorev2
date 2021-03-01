@@ -8,6 +8,8 @@ TODO = The feature needs more features
 
 We need to rewrite MdpLib.
 
+We now have webhooks on our discord server.
+
 GameCoreV2 for Unity is supposed to be a better version that brings more features:
 1) Game modding (with Mdp auto update & auto install) using ModuleManager	[DONE, WIP]
 2) System Management (with many built-in systems) 				[DONE, WIP]
