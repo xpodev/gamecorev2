@@ -4,10 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameCoreV2", "GameCoreV2\GameCoreV2.csproj", "{A6572F79-3B81-4E49-A951-D07397BDC4F5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{9E11E15E-DE02-4D8B-A7DB-8D83F89385BE} = {9E11E15E-DE02-4D8B-A7DB-8D83F89385BE}
-		{EA8CB6CC-2F43-40A2-B195-9E15358C476A} = {EA8CB6CC-2F43-40A2-B195-9E15358C476A}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Systems", "System\Systems.csproj", "{9E11E15E-DE02-4D8B-A7DB-8D83F89385BE}"
 EndProject
