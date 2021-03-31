@@ -70,7 +70,11 @@ namespace GameCore
                     return null;
                 }
             }
+#if NET5_0
+            return table.GetObject(parts[^1]);
+#else
             return table.GetObject(parts[parts.Length - 1]);
+#endif
         }
     }
 }
