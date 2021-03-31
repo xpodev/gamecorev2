@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 
-namespace GameCore.Net.Client
+namespace GameCore.NetAlpha.Client
 {
     public class ClientConnection<T> : Connection<T> where T : struct, Enum
     {

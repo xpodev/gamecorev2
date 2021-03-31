@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     public class NetSocketUDP : NetSocket
     {

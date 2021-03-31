@@ -6,7 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameCore.Net.Client
+namespace GameCore.NetAlpha.Client
 {
     public class ClientInterface<T, SocketType> where T : struct, Enum where SocketType : NetSocket, new()
     {

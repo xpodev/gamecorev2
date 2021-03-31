@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     public abstract class CustomMessageHandler
     {

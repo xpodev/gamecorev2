@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using GameCore.Net.Extensions;
+using GameCore.NetAlpha.Extensions;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Message<T> where T : struct, Enum

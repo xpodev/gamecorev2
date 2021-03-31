@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     public class StructArray<T> : CustomMessageHandler, IEnumerable<T> where T : struct
     {

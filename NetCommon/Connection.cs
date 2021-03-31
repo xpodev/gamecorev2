@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     public class Connection<T> where T : struct, Enum
     {
@@ -149,7 +149,6 @@ namespace GameCore.Net
 
                         if (m_vTmpMessage.Header.Size > 0)
                         {
-                            m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (result) =>
                             m_rSocket.BeginSendTo(bytes, size, m_vTmpMessage.Length, SocketFlags.None, m_rRemoteEndPoint, (result2) =>
                             {
                                 try
@@ -164,20 +163,17 @@ namespace GameCore.Net
                                 } catch (SocketException)
                                 {
                                     throw;
-                                    Close();
                                 }
                             }, this);
                         }
                     } catch (SocketException)
                     {
                         throw;
-                        Close();
                     }
                 }, this);
             } catch (SocketException)
             {
                 throw;
-                Close();
             }
         }
 

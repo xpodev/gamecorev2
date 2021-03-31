@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GameCore.Net.Server
+namespace GameCore.NetAlpha.Server
 {
     internal struct OwnedMessage<T> where T : struct, Enum
     {

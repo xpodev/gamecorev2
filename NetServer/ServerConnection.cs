@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 
-namespace GameCore.Net.Server
+namespace GameCore.NetAlpha.Server
 {
     public class ServerConnection<T> : Connection<T> where T : struct, Enum
     {

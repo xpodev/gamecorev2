@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
-using GameCore.Net;
-using GameCore.Net.Server;
+using GameCore.NetAlpha;
+using GameCore.NetAlpha.Server;
 
 namespace NetTest
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     // pack the struct on signle byte boundry (most packed)
     // any other value will cause data corruption unless sizeof(T) == Pack

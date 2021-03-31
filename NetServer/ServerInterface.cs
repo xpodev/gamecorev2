@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GameCore.Net.Server
+namespace GameCore.NetAlpha.Server
 {
     public class ServerInterface<T, SocketType> where T : struct, Enum where SocketType : NetSocket, new()
     {

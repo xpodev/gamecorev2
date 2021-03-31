@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     public class ObjectArray<T> : CustomMessageHandler, IEnumerable<T> where T : CustomMessageHandler, new()
     {

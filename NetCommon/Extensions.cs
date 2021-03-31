@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace GameCore.Net.Extensions
+namespace GameCore.NetAlpha.Extensions
 {
     public static class EnumExtension
     {

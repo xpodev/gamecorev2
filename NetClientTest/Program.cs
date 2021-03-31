@@ -2,8 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using GameCore.Net;
-using GameCore.Net.Client;
+using GameCore.NetAlpha;
+using GameCore.NetAlpha.Client;
 
 namespace NetClientTest
 {

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace GameCore.Net
+namespace GameCore.NetAlpha
 {
     public class ASCIIString : StringBase
     {
