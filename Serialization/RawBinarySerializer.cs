@@ -73,7 +73,7 @@ namespace GameCore.Serialization
 
         private byte[] SerializeStruct<T>(T obj) where T : struct
         {
-            return obj.GetBytes();
+            return obj.ToBytes();
         }
 
         private byte[] SerializeCustom(CustomRawBinarySerializer obj)

@@ -32,7 +32,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Python", "GameScripting\Pyt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PythonEnvironment", "GameScripting\PythonEnvironment\PythonEnvironment.csproj", "{9D6BD084-CBC0-426F-92FF-A837792F030F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Multiplayer", "Multiplayer", "{950788CA-8651-4301-BB1E-7741952AD7EA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetAlpha", "NetAlpha", "{950788CA-8651-4301-BB1E-7741952AD7EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCommon", "NetCommon\NetCommon.csproj", "{DEFEC808-A17A-4E0D-8082-E390CDD5ED1F}"
 EndProject
@@ -43,6 +43,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetClientTest", "NetClientTest\NetClientTest.csproj", "{46923CF3-E49E-42DE-BC50-B38E2CB7D5E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetServerTest", "NetServerTest\NetServerTest.csproj", "{F7BB3FCB-54BF-4662-B4CD-239F4BF3550D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net", "Net", "{764D36EE-1713-4A11-866B-CE16ED17D765}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCore", "NetCore\NetCore.csproj", "{91505096-220D-4890-9994-400EE9222BC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,6 +118,10 @@ Global
 		{F7BB3FCB-54BF-4662-B4CD-239F4BF3550D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7BB3FCB-54BF-4662-B4CD-239F4BF3550D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7BB3FCB-54BF-4662-B4CD-239F4BF3550D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91505096-220D-4890-9994-400EE9222BC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91505096-220D-4890-9994-400EE9222BC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91505096-220D-4890-9994-400EE9222BC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91505096-220D-4890-9994-400EE9222BC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +135,7 @@ Global
 		{E759FB67-F09C-4B99-A88E-462ED5F4AC92} = {950788CA-8651-4301-BB1E-7741952AD7EA}
 		{46923CF3-E49E-42DE-BC50-B38E2CB7D5E4} = {950788CA-8651-4301-BB1E-7741952AD7EA}
 		{F7BB3FCB-54BF-4662-B4CD-239F4BF3550D} = {950788CA-8651-4301-BB1E-7741952AD7EA}
+		{91505096-220D-4890-9994-400EE9222BC7} = {764D36EE-1713-4A11-866B-CE16ED17D765}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {05FBE4D5-42B2-4D70-9B6D-251B8C7E7FF4}

@@ -6,7 +6,7 @@ namespace GameCore.Serialization
 {
     public static class ByteArrayExtension
     {
-        internal static byte[] EnumGetBytes<EnumT>(this EnumT value) where EnumT : struct
+        internal static byte[] EnumToBytes<EnumT>(this EnumT value) where EnumT : struct
         {
             byte[] bytes = default;
             Type enumType = Enum.GetUnderlyingType(typeof(EnumT));
@@ -56,7 +56,7 @@ namespace GameCore.Serialization
             return bytes;
         }
 
-        internal static byte[] StructGetBytes<StructT>(this StructT value) where StructT : struct
+        internal static byte[] StructToBytes<StructT>(this StructT value) where StructT : struct
         {
             int size = Marshal.SizeOf(value);
             byte[] bytes = new byte[size];
@@ -71,13 +71,13 @@ namespace GameCore.Serialization
             return bytes;
         }
 
-        public static byte[] GetBytes<T>(this T value) where T : struct
+        public static byte[] ToBytes<T>(this T value) where T : struct
         {
             if (typeof(T).IsEnum)
             {
-                return value.EnumGetBytes();
+                return value.EnumToBytes();
             }
-            return value.StructGetBytes();
+            return value.StructToBytes();
         }
 
         internal static EnumT EnumFromBytes<EnumT>(this IEnumerable<byte> bytes) where EnumT : struct
