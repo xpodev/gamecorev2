@@ -48,9 +48,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net", "Net", "{764D36EE-171
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCore", "NetCore\NetCore.csproj", "{91505096-220D-4890-9994-400EE9222BC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldGenerationCore", "WorldGeneration\WorldGenerationCore.csproj", "{AA5B42E1-8455-4F68-B989-54BA0D462888}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldGenerationCore", "WorldGeneration\WorldGenerationCore.csproj", "{AA5B42E1-8455-4F68-B989-54BA0D462888}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WorldGeneration", "WorldGeneration", "{6595C393-31B2-4457-B017-28B13CD06418}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity", "Unity\Unity.csproj", "{A5000FE2-574B-48E0-B7A7-57D97AE35EA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +132,10 @@ Global
 		{AA5B42E1-8455-4F68-B989-54BA0D462888}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA5B42E1-8455-4F68-B989-54BA0D462888}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA5B42E1-8455-4F68-B989-54BA0D462888}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5000FE2-574B-48E0-B7A7-57D97AE35EA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5000FE2-574B-48E0-B7A7-57D97AE35EA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5000FE2-574B-48E0-B7A7-57D97AE35EA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5000FE2-574B-48E0-B7A7-57D97AE35EA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
