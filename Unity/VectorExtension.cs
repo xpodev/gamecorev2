@@ -1,8 +1,5 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// contains extensions for built-in Unity classes to make life easier
-/// </summary>
 namespace GameCore.Unity.Extension
 {
     /// <summary>
