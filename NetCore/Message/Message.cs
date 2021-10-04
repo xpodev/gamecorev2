@@ -10,7 +10,7 @@ namespace GameCore.Net
     /// it can be used with <c>GameCore.Net.Connection</c> for sending and receiving messages.
     /// </summary>
     /// <typeparam name="T">An <c>enum</c> that specifies all messages types.</typeparam>
-    public class Message<T> : IMessage<T> where T : struct, Enum
+    public class Message<T> : IMessage<T> where T : struct//, Enum
     {
         /// <summary>
         /// <inheritdoc/>

@@ -1,0 +1,265 @@
+Message related settings:
+Type type of message (class/struct) (default=Sync.Message)
+string constructor name (+args: object[]) (default=".ctor"/type.name)
+string item insertion function (+args: object[]) (default="Add") (can have more than one)
+Type default insertion type (default=byte[])
+
+message constructor args:
+	"Id": same type as in network manager (default=int) - id of updated item
+	"IsReliable": bool - should the message be sent as reliable
+	"Priority": float - the priority of the message
+	"Type": CommandType - either SyncValue or RemoteCall
+
+default="Id"
+
+if a message has no property named IdPropertyName, the id will be added as an object
+
+
+Serialization/Deserialization related settings:
+Serializer (make static method to be a registered as a serializer)
+Deserializer (make static method to be registered as a deserializer)
+
+
+[Method, Inherited = false, AllowMultiple = false]
+Serialzier(*types, Strict: bool = false) -> 
+	declares the method as a serializer for types
+	Strict: if true, declares the method as a serializer for these types only
+
+[Method, Inherited = false, AllowMultiple = false]
+SerializerArgs(params object[] args) ->
+	declares the order of argument to pass to the serializer
+
+Serializer args:
+	"Object" - the object to be serialized
+	"Type" - the type of the object to be serialized
+	"Operation" - SerializationOperation.Serialize (useful for function that do both serialization & desrialization)
+
+Serializer:
+	return type: must be concrete
+
+	object type: either concrete (must be same as in the attribute) or generic T
+	if is generic, T will always be the type (if Strict) or a subclass of 
+	the type otherwise
+
+Direct Serializer (Serializer):
+	inserts data directly to the message
+
+Direct Serializer args (Serializer args):
+	"Message" - the message we're currently working with
+
+if 2 serializer are possible for a certain type, the closer one will be used:
+
+class A {}
+class B : A {}
+class BB : B {}
+
+[Serializer(typeof(A))]
+byte[] SerializeA<T>(T obj) {}
+
+[Serializer(typeof(B))]
+byte[] SerializeB<T>(T obj) {}
+
+in this case, both SerializeA and SerializeB are applicable to serialize BB, but
+SerializeB is a one inheritance closer, so it will be used
+the search process will iterate through the bases looking for a serializer that is not strict
+
+Deserializer args:
+	same as Serializer args but for deserialization
+
+Deserializer:
+	must return U if not Strict, can be generic otherwise (parameter must not be
+	the same type as U). Will get converted to generic instance where return type
+	is the type of the object
+
+
+unity has a (internal) function
+static Object Object.FindObjectFromInstanceID(int)
+
+
+The challenge:
+	we have an assembly that references itself
+	some references should be moved to another assembly
+	
+	we want all references that has an Authority to reference code in the authority assembly
+	we want all references that don't have an Authority to reference the shared assemblys
+
+	so we should keep track for
+		shared assemblies
+		server assemblies
+		client assemblies
+
+	Authority assembly can't reference an assembly with a different authorty (because it won't be present)
+	shared assembly may not reference Authority secific objects (such as types, methods, field, properties, etc...)
+
+	if a shared object references an authority specific object, it will be considered as part authority
+	if a shared object references more than 1 authority specific object, an error will be thrown (because that means it needs more than 1 authorities assemblies, which is impossible)
+		this only applies if the object referenced has an AuthorityCode attribute. otherwise, it will be included in the authority assembly.
+
+	we'll need to make a function that transfers replaces references to one assembly with references to another assembly
+	so we'll need to make a mapping of references
+
+	I guess I'll need to create a ILSpliter, but for the case of simplicity we can assume there's no need to split anything as we don't currently support shared assemblies
+
+
+NetworkManager will have readonly properties IsServer and IsClient
+the reason we make them properties is so we don't need to recompile every assembly that references authority assemblies
+as we change the values after compilation
+
+IsServer => (Authority == Authority.Server);
+IsClient => (Authority == Authority.Client);
+
+
+
+Note: shared code may not access authority specific code (any synchronized object)
+either we make a SharedAttribute or try to share all unsync code
+
+
+Sync process:
+if MakeSharedAssembly:
+	make 3 copies (shared, client, server)
+	make shared to only contain common code
+	make client to only contain client code
+	make server to only contain server code
+	
+	replace all references to common code with code in shared assembly
+	build client
+
+	replace all references to common code with code in shared assembly
+	build server
+
+	write shared
+	write client
+	write server
+else:
+	make 2 copies (client, server)
+	
+	build client
+	write client
+	
+	build server
+	write server
+
+
+NetworkManager static constructor should validate the auhtority assemblies are present and accessible (by calling a method in them. maybe Initialize() ?)
+NetworkManager is shared (it's in the shared assembly)
+
+
+Note: when I say a function *should* have no arguments, I mean that by default it should get no argument, but it can have
+the CustomCallAttribute which will allow all the arguments passed to the argument
+
+
+Note: serializers and deserializers can't be generic
+Idea for generic (de)serializers:
+	I might add a GenericSerializer, GenericDeserializer attribute someday
+	generic (de)serializer will be searched last.
+	generic (de)serializer can only be generic on the object that needs to be (de)serialized
+
+
+Note: if MakeShared is true, synchronized object must reside in a container with SynchronizedClassAttribute attribute
+
+
+Serializer attribute (method, single):
+	Type: Type - the type for which this method is a serializer for
+	Strict: bool - whether or not this serializer can also serialize subtypes.
+		true means this serializer will only be used for the given type
+		false means this serializer will be used for every subtype of the given type, if it's the best match
+	Direct: bool - whether or not this is a direct serializer, which means the serializer will add the results directly
+	to the message.
+		true means the method will add the results directly to the message
+		false means the method will return the serialized object so it needs to be added to the message
+
+	this attribute declares the method as a serializer function that serializes from Type -> method.ReturnType
+	the target method must be static. it should have only 1 argument of a non-generic type
+
+
+Deserializer attribute (method, single):
+	Type: Type - the type for which this method is a deserializer for
+	Strict: bool - whether or not this deserializer can also deserialize to subtypes.
+		true means this deserializer will only be used for the given type
+		false means this deserializer will be used for every subtype of the given type, if it's the best match
+
+	unlike serializers, deserializers are always declared as Direct
+	this attribute declares the method as a deserializer function that deserializes from method.[Parameter::Object].Type -> Type
+	the target method must be static. it should have only 2 argument of a non-generic type, first is the message, second is the target type.
+
+
+CustomCall attribute (method, single):
+	Arguments: string[] - an array of string defining the order of parameters in which to call the function
+	
+	if this attribute is given, the method must not have any other parameters besides the arguments given
+	the arguments that can be given are different for each type, but here are some of the main ones:
+		This - the current object. may mean different things depending on the context
+		Null - null
+
+
+Singleton attribute (class | struct):
+	GetSingletonMemberName: string - the name of the member to use when we need to access the singleton.
+		member must be static.
+		if member is a function, it should get no arguments
+		if member is a field, it must be accessible
+		if member is a property, is must have a getter
+		
+		member (return) type must be exactly equal to the class type
+
+
+NetowrkConfiguration
+// holds everything that have to do with synchronized objects
+SynchronizedObjects attribute (class, single):
+	BaseType - the type which all sync classes must derive from
+	UIDType - the type which will used to identify different synchronized objects
+	Container - the type of the container which will hold references to all the synchronized objects
+	UIDProviderType - the type which the has a method that provides a uid of type IdType (default (or null) is this NetworkConfiguration class)
+	UIDProviderFunction - the name of the method that provides a unique id of type UIDType (default (or null) is GetUID)
+		the method must be static
+		the method must have exactly 0 parameters
+
+
+NetworkConfiguration
+MessageType attribute (class, single):
+	Type - the type that represents a message
+	Constructor - either a static method or null (which defaults to the constructor) to use in order to construct a message
+	Args: string[] - see parent
+
+	this attribute inherits CustomCall
+
+
+
+NetworkConfiguration
+SerializationContext (class, single):
+	MaxRecursiveSerialization: int - how many serializers to use at most before the type is declared as unserializable
+	MaxRecursiveDeserialization: int - how many deserializers to use at most before the type is declared as unserializable (yes, same error as serializable)
+
+
+
+Sync process:
+preparations - prepares the assembly for syncing. mainly generating ids for objects, creating a copy of it
+synchronizing - building the assembly depending on given settings
+
+Preparation settings:
+idType - the type to use as the id of objects
+
+synchronizing process:
+build serialization table - building the table of type -> serializer
+build types - first properties then methods.
+
+common code is defined as any member (type, method, property, fields) that doesn't have any attribute that derives SynchronizeAttribute
+
+if an assembly does not have a NetworkConfiguration attribute, it will not be processed unless one is provided in the SynchronizationSettings
+
+// settings related to preparing the assemblies and common settings for build process
+SynchronizationSettings:
+	NetworkConfiguration: string - the name of the (NetworkConfiguration) class that holds the network configuration settings
+		the default is null which means we'll try to get the settings from the assembly. if that also fails, we'll use a default one
+		if this does not specify a valid type an error will be thrown
+	OverrideNetworkConfiguration : bool - whether or not to use the above configuration if there's already a configuration in the assembly
+	MakeSharedAssembly: bool - whether or not tu put all the common code in a shared (separate) assembly
+	ServerAssemblyName: string - the name of the assembly for the server (default=Source.WithoutExtension + ".Server" + Source.Extension)
+	ClientAssemblyName: string - the name of the assembly for the client (default=Source.WithoutExtension + ".Server" + Source.Extension)
+	SharedAssemblyName: string - the name of the assembly containing the shared code. only used if MakeSharedAssembly is true (default=Source.WithoutExtension + ".NetShared" + Source.Extension)
+	OutputPath: string - the path to the folder where the result assemblies should be placed
+		we'll use {Server}, {Client} and {Shared} format vars to be able to redirect the files depending on their role
+
+// settings related to individual build process of an assmebly
+BuildSettings:
+	Authority: Authority - the authority these settings are relevant for
+	OnlyAuthorityMembers: bool - whether or not to only include members with the same authority as the current target authority

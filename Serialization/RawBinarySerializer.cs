@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace GameCore.Serialization
 {
     public sealed class RawBinarySerializer : ISerializer<byte[]>
     {
-        private readonly MethodInfo m_fSerializeStruct = typeof(RawBinarySerializer).GetMethod(nameof(DeserializeStruct));
+        private readonly MethodInfo m_fSerializeStruct = typeof(RawBinarySerializer).GetMethod(nameof(SerializeStruct));
         private readonly MethodInfo m_fDeserializeStruct = typeof(RawBinarySerializer).GetMethod(nameof(DeserializeStruct));
-        private readonly MethodInfo m_fDeserializeCustom = typeof(RawBinarySerializer).GetMethod(nameof(DeserializeStruct));
+        private readonly MethodInfo m_fDeserializeCustom = typeof(RawBinarySerializer).GetMethod(nameof(DeserializeCustom));
 
         public ISerializer<byte[]> DefaultSerializer
         {

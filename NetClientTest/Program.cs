@@ -9,7 +9,12 @@ namespace NetClientTest
 {
     enum CMD
     {
-        Chat
+        Chat,
+        Move,
+        Jump,
+        RollOver,
+        Crouch,
+        Attack
     }
 
     class MyClient : ClientInterface<CMD, NetSocketUDP>

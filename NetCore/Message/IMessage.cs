@@ -7,7 +7,7 @@ namespace GameCore.Net
     /// A common interface for messages that can be sent by a <c>GameCore.Net.Connection</c> object.
     /// </summary>
     /// <typeparam name="T">An <c>enum</c> that specifies all messages types.</typeparam>
-    public interface IMessage<T> where T : struct, Enum
+    public interface IMessage<T> where T : struct//, Enum
     {
         /// <summary>
         /// The type of the message.

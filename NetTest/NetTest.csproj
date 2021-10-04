@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="NetTest.Generated.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="NetTest.Generated.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutoSync\AutoSync.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="NetTest.Generated">
+      <HintPath>bin\Debug\net5.0\Generated\NetTest.Generated.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(SolutionDir)\NetTest.Generated\$(OutDir)\NetTest.Generated.dll $(TargetDir) /y" />
+  </Target>
+
+</Project>

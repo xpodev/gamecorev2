@@ -1,0 +1,4 @@
+﻿namespace GameCore.Net.Sync
+{
+
+}

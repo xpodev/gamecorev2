@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
+    <RootNamespace>GameCore.Net.Sync</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILRepack.Lib" Version="2.0.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\cecil\Mono.Cecil.csproj" />
+    <ProjectReference Include="..\GameCoreV2\GameCoreV2.csproj" />
+    <ProjectReference Include="..\NetCore\NetCore.csproj" />
+    <ProjectReference Include="..\Sync\Sync.csproj" />
+  </ItemGroup>
+
+</Project>
