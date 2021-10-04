@@ -23,7 +23,23 @@ namespace GameCore.ModLoader
 
         private void LoadTexture(IXmlConfigurator _, XmlNode node)
         {
-
+            // TODO: reimplement this, create better exceptions
+            string path = node.Attributes["src"]?.Value;
+            string name = node.Attributes["name"]?.Value;
+            if (path is null)
+            {
+                Debug.Fail($"tried to load an assembly, but no path was given");
+                return;
+            }
+            if (name is null)
+            {
+                Debug.Fail($"tried to load an assembly, but no name was given");
+                return;
+            }
+            //UnityEngine.Texture2D texture = ImageLoader.BitmapLoader.LoadImage(Path.Combine(ModLoader.CurrentLoader.CurrentMod.Directory, path));
+            UnityEngine.Texture2D texture = new UnityEngine.Texture2D(0, 0);
+            UnityEngine.ImageConversion.LoadImage(texture, File.ReadAllBytes(path));
+            GetModAssets(ModLoader.CurrentLoader.CurrentMod.Name).AddResource(name, texture);
         }
 
         private void LoadAssembly(IXmlConfigurator _, XmlNode node)

@@ -18,13 +18,13 @@ namespace GameCore
             DBPathRegexItemGroupName + 
             ">[A-Za-z0-9]*)?)?$";
 
-        private const string DBPathSeparator = @"/";
+        private const char DBPathSeparator = '/';
 
-        private static Regex DBPathRegex = new Regex(DBPathRegexString);
+        private static readonly Regex DBPathRegex = new Regex(DBPathRegexString);
 
-        private string m_container = "";
-        private string[] m_path = new string[0];
-        private string m_item = "";
+        private readonly string m_container = "";
+        private readonly string[] m_path = Array.Empty<string>();
+        private readonly string m_item = "";
 
         public DatabasePath(string path)
         {
