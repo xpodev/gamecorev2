@@ -13,7 +13,7 @@ namespace NetTest.Generated
     public class SyncThis
     {
         [RunOnServer]
-        public void DoOnServer_CallFromClient()
+        public static void DoOnServer_CallFromClient()
         {
             Console.WriteLine("This is called from the client and runs on the server");
             ClientLog0();
@@ -226,6 +226,9 @@ namespace NetTest.Generated
     [ExternalSerializers(typeof(GameCore.Riptide.MessageConfiguration))]
     public class RiptideNetworkManager
     {
+        public bool IsServer => false;
+        public bool IsClient => false;
+
         [CustomFunctionCall("Message")]
         public static void SendMessage(RiptideNetworking.Message myMessage)
         {

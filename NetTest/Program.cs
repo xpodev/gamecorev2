@@ -177,6 +177,67 @@ namespace NetTest
                     settings.MessageSettings.MessageSenderMethod = settings.NetworkManager.Module.ImportReference(settings.MessageSettings.MessageSenderMethod);
 
                     settings.Authority = authority;
+
+                    {
+                        PropertyDefinition isServerProperty = settings.NetworkManager.GetProperty("IsServer", assembly.MainModule.TypeSystem.Boolean);
+                        if (isServerProperty == null)
+                        {
+                            isServerProperty = new PropertyDefinition("IsServer", PropertyAttributes.None, assembly.MainModule.TypeSystem.Boolean);
+                            settings.NetworkManager.Properties.Add(isServerProperty);
+                        }
+                        
+                        PropertyDefinition isClientProperty = settings.NetworkManager.GetProperty("IsClient", assembly.MainModule.TypeSystem.Boolean);
+                        if (isClientProperty == null)
+                        {
+                            isClientProperty = new PropertyDefinition("IsClient", PropertyAttributes.None, assembly.MainModule.TypeSystem.Boolean);
+                            settings.NetworkManager.Properties.Add(isClientProperty);
+                        }
+
+                        MethodDefinition getIsServer = isServerProperty.GetMethod;
+                        if (getIsServer == null)
+                        {
+                            getIsServer = new MethodDefinition(
+                                "get_IsServer",
+                                MethodAttributes.Static | MethodAttributes.Public,
+                                isServerProperty.PropertyType
+                            );
+                            settings.NetworkManager.Methods.Add(getIsServer);
+                        }
+
+                        {
+                            ILProcessor il = getIsServer.Body.GetILProcessor();
+
+                            il.Body.Instructions.Clear();
+
+                            il.Emit(settings.Authority == Authority.Server ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+                            il.Emit(OpCodes.Ret);
+
+                            isServerProperty.GetMethod = getIsServer;
+                        }
+
+                        MethodDefinition getIsClient = isClientProperty.GetMethod;
+                        if (getIsClient == null)
+                        {
+                            getIsClient = new MethodDefinition(
+                                "get_IsClient",
+                                MethodAttributes.Static | MethodAttributes.Public,
+                                isClientProperty.PropertyType
+                            );
+                            settings.NetworkManager.Methods.Add(getIsClient);
+                        }
+
+                        {
+                            ILProcessor il = getIsClient.Body.GetILProcessor();
+
+                            il.Body.Instructions.Clear();
+
+                            il.Emit(settings.Authority == Authority.Client ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+                            il.Emit(OpCodes.Ret);
+
+                            isClientProperty.GetMethod = getIsClient;
+                        }
+                    }
+
                     if (!new AssemblyProcessor(assembly).Process(settings))
                     {
                         Console.WriteLine($"{authority} assembly synchronization failed.");
@@ -366,7 +427,7 @@ namespace NetTest
         {
             // todo: make shared only if static method
 
-            bool shared = false;
+            bool shared = true;
             string path = shared ? "Generated-Shared/" : "Generated-NotShared";
 
             if (!Directory.Exists(path))

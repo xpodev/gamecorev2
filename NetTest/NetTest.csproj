@@ -24,12 +24,4 @@
     <ProjectReference Include="..\NetCore\NetCore.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(SolutionDir)\NetTest.Generated\$(OutDir)NetTest.Generated.dll&quot; &quot;$(TargetDir)&quot; /y&#xD;&#xA;copy &quot;$(SolutionDir)\NetTest.Generated\$(OutDir)Riptide.AutoSync.dll&quot; &quot;$(TargetDir)&quot; /y" />
-  </Target>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet build ../NetTest.Generated" />
-  </Target>
-
 </Project>
