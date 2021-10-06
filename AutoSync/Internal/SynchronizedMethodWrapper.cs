@@ -45,7 +45,7 @@ namespace GameCore.Net.Sync.Internal
             MethodDefinition method = new MethodDefinition(
                 $"<{MethodReference.FullName.Replace('.', '_') }> m__RPCDispatcher", 
                 MethodAttributes.Static, 
-                MethodReference.Module.TypeSystem.Boolean
+                MethodReference.Module.TypeSystem.Void
                 );
 
             ParameterDefinition messageParameter = new ParameterDefinition(settings.MessageSettings.MessageType);
@@ -77,9 +77,9 @@ namespace GameCore.Net.Sync.Internal
 
             if (!MethodReference.ReturnType.IsEqualTo(MethodReference.Module.TypeSystem.Boolean))
             {
-                if (!MethodReference.ReturnType.IsEqualTo(MethodReference.Module.TypeSystem.Void))
-                    il.Emit(OpCodes.Pop);
-                il.Emit(OpCodes.Ldc_I4_1);
+                //if (!MethodReference.ReturnType.IsEqualTo(MethodReference.Module.TypeSystem.Void))
+                //    il.Emit(OpCodes.Pop);
+                //il.Emit(OpCodes.Ldc_I4_1);
             }
 
             il.Emit(OpCodes.Ret);

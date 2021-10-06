@@ -5,27 +5,25 @@ namespace GameCore.Net.Sync.Processors
 {
     public static class AssemblyPreProcessor
     {
-        public static void ProcessProperty(PropertyDefinition property)
-        {
-            CustomAttribute syncValue = property.GetCustomAttribute(typeof(SynchronizeValueAttribute));
-            SynchronizeValueAttribute sync;
-            if ((sync = syncValue.ToAttributeObject<SynchronizeValueAttribute>()) != null)
-            {
-                System.Console.WriteLine($"{property.Name} => {sync.Id}");
-                syncValue.Properties.Add(new CustomAttributeNamedArgument(
-                    nameof(sync.Id), new CustomAttributeArgument(property.Module.TypeSystem.Int32, sync.Id)));
-            }
-        }
+        static DefaultUIDGenerator
+            ClientUIDGenerator = new DefaultUIDGenerator(),
+            ServerUIDGenerator = new DefaultUIDGenerator();
 
-        public static void ProcessMethod(MethodDefinition method)
+        public static void ProcessMember<T, U>(T member)
+            where T : MemberReference, ICustomAttributeProvider
+            where U : SynchronizeObjectAttribute
         {
-            CustomAttribute syncValue = method.GetCustomAttribute(typeof(SynchronizeCallAttribute));
-            SynchronizeCallAttribute sync;
-            if ((sync = syncValue.ToAttributeObject<SynchronizeCallAttribute>()) != null)
+            if (member.GetCustomAttribute(typeof(U)) is CustomAttribute syncAttribute && syncAttribute.ToAttributeObject(typeof(U)) is U sync)
             {
-                System.Console.WriteLine($"{method.Name} => {sync.Id}");
-                syncValue.Properties.Add(new CustomAttributeNamedArgument(
-                    nameof(sync.Id), new CustomAttributeArgument(method.Module.TypeSystem.Int32, sync.Id)));
+                var uid = (sync.Authority == Authority.Client ? ClientUIDGenerator : ServerUIDGenerator).GenerateUID();
+                syncAttribute.Properties.Add(new CustomAttributeNamedArgument(
+                    nameof(sync.Id),
+                    new CustomAttributeArgument(
+                        member.Module.TypeSystem.Int32,
+                        uid
+                    )
+                ));
+                System.Console.WriteLine($"[{sync.Authority}] {member.Name} => {uid}");
             }
         }
 
@@ -33,23 +31,16 @@ namespace GameCore.Net.Sync.Processors
         {
             foreach (PropertyDefinition property in type.Properties)
             {
-                ProcessProperty(property);
+                ProcessMember<PropertyDefinition, SynchronizeValueAttribute>(property);
             }
             foreach (MethodDefinition method in type.Methods)
             {
-                ProcessMethod(method);
+                ProcessMember<MethodDefinition, SynchronizeCallAttribute>(method);
             }
         }
 
         public static void ProcessAssembly(AssemblyDefinition assembly)
         {
-            //NetworkConfigAttribute config;
-
-            //if ((config = assembly.GetAttribute<NetworkConfigAttribute>()) != null)
-            //{
-                
-            //}
-
             foreach (TypeDefinition type in assembly.MainModule.Types)
             {
                 ProcessType(type);

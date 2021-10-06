@@ -36,10 +36,11 @@ namespace GameCore.Net.Sync.Processors
 
                 if (!sync.ExecuteOnAuthority && sync.Authority == settings.Authority)
                 {
-                    if (!Item.ReturnType.IsEqualTo(Item.Module.TypeSystem.Void))
-                        Item.ReturnType = Item.Module.TypeSystem.Void;
-
                     il.Body.Instructions.Clear();
+
+                    if (!Item.ReturnType.IsEqualTo(Item.Module.TypeSystem.Void))
+                        throw new Exception($"Function {Item.FullName} must return `bool` or `void`");
+
                     il.Emit(OpCodes.Ret);
                 }
 

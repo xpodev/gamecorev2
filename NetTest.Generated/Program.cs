@@ -12,28 +12,6 @@ namespace NetTest.Generated
     [SynchronizeClass(MaxUpdateRate = 10)]
     public class SyncThis
     {
-        //const string a = "MyString";
-
-        //// set is invalid because it tries to call client-only method
-        //[SetFromClient]
-        //public int ANumber { get => 0; set => Something(); }
-
-        //[ServerSide]
-        //public void Something() { }
-
-        //[CustomFunctionCall("Object", null)]
-        //[TypeSerializer(typeof(string), Strict = true)]
-        //static int SerializeObjectA<T>(T a, string b)
-        //{
-        //    return 0;
-        //}
-
-        //[TypeSerializer(typeof(object))]
-        //static int SerializeObjectB(object a)
-        //{
-        //    return 0;
-        //}
-
         [RunOnServer]
         public void DoOnServer_CallFromClient()
         {
@@ -58,17 +36,15 @@ namespace NetTest.Generated
         }
 
         [RunOnClient]
-        public static bool ClientLog1()
+        public static void ClientLog1()
         {
             Console.WriteLine("WriteOnClient1: nothing yet");
-            return true;
         }
 
         [RunOnClient]
-        public static int ClientLog2()
+        public static void ClientLog2()
         {
             Console.WriteLine("WriteOnClient2: nothing yet");
-            return 15;
         }
 
         [RunOnClient]

@@ -4,32 +4,26 @@ namespace GameCore.Net.Sync
 {
     using UIDType = Int32;
 
+    class DefaultUIDGenerator : IUIDGenerator<UIDType>
+    {
+        private UIDType m_uid = 0;
+
+        public UIDType GenerateUID()
+        {
+            return m_uid++;
+        }
+    }
+
     [AttributeUsage(AttributeTargets.All, Inherited = true)]
     public abstract class SynchronizeObjectAttribute : SynchronizeAttribute
     {
-        class DefaultUIDGenerator : IUIDGenerator<UIDType>
-        {
-            private UIDType m_uid = 0;
-
-            public UIDType GenerateUID()
-            {
-                return m_uid++;
-            }
-        }
-
-        public static IUIDGenerator<UIDType> UIDGenerator { get; set; }
-
         public UIDType Id { get; set; }
 
-        public SynchronizeObjectAttribute()
-        {
-            Id = UIDGenerator.GenerateUID();
-            //Console.WriteLine("Sync UID: " + Id);
-        }
+        public Authority Authority { get; }
 
-        static SynchronizeObjectAttribute()
+        public SynchronizeObjectAttribute(Authority authority)
         {
-            UIDGenerator = new DefaultUIDGenerator();
+            Authority = authority;
         }
     }
 }

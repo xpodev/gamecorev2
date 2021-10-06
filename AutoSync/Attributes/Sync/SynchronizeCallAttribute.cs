@@ -11,14 +11,11 @@ namespace GameCore.Net.Sync
 
         public float Priority { get; set; }
 
-        public Authority Authority { get; }
-
         public bool ExecuteOnAuthority { get; }
 
-        public SynchronizeCallAttribute(Authority authority, bool executeOnAuthority = false)
+        public SynchronizeCallAttribute(Authority authority, bool executeOnAuthority = false) : base(authority)
         {
             ExecuteOnAuthority = executeOnAuthority;
-            Authority = authority;
         }
     }
 }

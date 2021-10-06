@@ -182,23 +182,17 @@ namespace NetTest
             }
         }
 
+        static void PrepareAssembly(string inputPath)
+        {
+            using (AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(inputPath, new ReaderParameters() { ReadWrite = true }))
+            {
+                AssemblyPreProcessor.ProcessAssembly(assemblyDefinition);
+                assemblyDefinition.Write();
+            }
+        }
+
         static (string, string, string) PrepareSyncWithShared(string inputPath, string outputPath)
         {
-            Version version;
-            ModuleKind moduleKind;
-
-            using (Stream s = File.Open(inputPath, FileMode.Open, FileAccess.ReadWrite))
-            {
-                using (AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(s))
-                {
-                    version = assemblyDefinition.Name.Version;
-                    moduleKind = assemblyDefinition.MainModule.Kind;
-
-                    AssemblyPreProcessor.ProcessAssembly(assemblyDefinition);
-                    assemblyDefinition.Write();
-                }
-            }
-
             string targetPath = string.Format(outputPath, "Shared");
             string clientPath = string.Format(outputPath, "Client");
             string serverPath = string.Format(outputPath, "Server");
@@ -246,13 +240,6 @@ namespace NetTest
         {
             string clientPath = string.Format(outputPath, "Client");
             string serverPath = string.Format(outputPath, "Server");
-
-
-            using (AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(inputPath, new ReaderParameters() { ReadWrite = true }))
-            {
-                AssemblyPreProcessor.ProcessAssembly(assemblyDefinition);
-                assemblyDefinition.Write();
-            }
 
             Assembly assembly = new Assembly(inputPath);
 
@@ -364,6 +351,8 @@ namespace NetTest
             string targetPath = Path.Combine(Directory.GetCurrentDirectory(), path, "NetTest.Generated.{0}.dll");
 
             string clientLibraryPath, serverLibraryPath, sharedLibraryPath;
+
+            PrepareAssembly(assemblyPath);
 
             (clientLibraryPath, serverLibraryPath, sharedLibraryPath) = shared ? PrepareSyncWithShared(assemblyPath, targetPath) : PrepareSyncWithoutShared(assemblyPath, targetPath);
 

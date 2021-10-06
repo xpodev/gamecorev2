@@ -71,6 +71,7 @@ namespace GameCore.Net.Sync
             {
                 il.Body.Instructions.Add(label);
                 rpc.GenerateCall(il);
+                il.Emit(OpCodes.Ldc_I4_1);
                 il.Emit(OpCodes.Br, endOfMethod);
             }
 
