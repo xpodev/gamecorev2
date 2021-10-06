@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoSync\AutoSync.csproj" />
+    <ProjectReference Include="..\NetCore\NetCore.csproj" />
   </ItemGroup>
 
 </Project>

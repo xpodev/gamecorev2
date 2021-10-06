@@ -17,16 +17,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoSync\AutoSync.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="NetTest.Generated">
-      <HintPath>bin\Debug\net5.0\Generated\NetTest.Generated.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\NetCore\NetCore.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(SolutionDir)\NetTest.Generated\$(OutDir)\NetTest.Generated.dll $(TargetDir) /y" />
+    <Exec Command="copy &quot;$(SolutionDir)\NetTest.Generated\$(OutDir)NetTest.Generated.dll&quot; &quot;$(TargetDir)&quot; /y" />
+  </Target>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet build ../NetTest.Generated" />
   </Target>
 
 </Project>

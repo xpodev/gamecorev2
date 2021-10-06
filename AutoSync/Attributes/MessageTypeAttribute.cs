@@ -12,12 +12,7 @@ namespace GameCore.Net.Sync
         /// </summary>
         public string ConstructorName { get; }
 
-        /// <summary>
-        /// default is <c>Id</c>.
-        /// </summary>
-        public string IdPropertyName { get; }
-
-        public MessageTypeAttribute(Type messageType, params object[] args) : base(args.Length == 0 ? new object[] { "Id" } : args)
+        public MessageTypeAttribute(params object[] args) : base(args.Length == 0 ? new object[] { "Id" } : args)
         {
 
         }

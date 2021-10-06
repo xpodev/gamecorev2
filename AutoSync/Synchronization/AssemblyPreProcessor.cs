@@ -1,11 +1,10 @@
 ﻿using Mono.Cecil;
 using GameCore.Net.Sync.Extensions;
 
-namespace GameCore.Net.Sync.Generators
+namespace GameCore.Net.Sync.Processors
 {
-    public static class AssemblyProcessor
+    public static class AssemblyPreProcessor
     {
-
         public static void ProcessProperty(PropertyDefinition property)
         {
             CustomAttribute syncValue = property.GetCustomAttribute(typeof(SynchronizeValueAttribute));
@@ -44,12 +43,12 @@ namespace GameCore.Net.Sync.Generators
 
         public static void ProcessAssembly(AssemblyDefinition assembly)
         {
-            NetworkConfigAttribute config;
+            //NetworkConfigAttribute config;
 
-            if ((config = assembly.GetAttribute<NetworkConfigAttribute>()) != null)
-            {
+            //if ((config = assembly.GetAttribute<NetworkConfigAttribute>()) != null)
+            //{
                 
-            }
+            //}
 
             foreach (TypeDefinition type in assembly.MainModule.Types)
             {

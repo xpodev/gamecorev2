@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using Mono.Cecil;
 
@@ -16,7 +15,7 @@ namespace GameCore.Net.Sync.Extensions
                 if (arg.Value is TypeReference tRef)
                 {
                     types[i] = Type.GetType(arg.Type.FullName);
-                    values[i] = Type.GetType(tRef.FullName);
+                    values[i] = Type.GetType(tRef.AssemblyQualifiedName());
                 }
                 else if (arg.Value is CustomAttributeArgument cVal)
                 {
@@ -28,7 +27,8 @@ namespace GameCore.Net.Sync.Extensions
                     (Type[] _, object[] vs) = BuildConstructorData(cVals);
                     types[i] = Type.GetType(arg.Type.FullName).MakeArrayType();
                     values[i] = vs;
-                } else
+                } 
+                else
                 {
                     types[i] = arg.Value.GetType();
                     values[i] = arg.Value;
@@ -37,10 +37,10 @@ namespace GameCore.Net.Sync.Extensions
             return (types, values);
         }
 
-        public static object ToAttributeObject(this CustomAttribute attribute, System.Type type = null)
+        public static object ToAttributeObject(this CustomAttribute attribute, Type type = null)
         {
             if (attribute == null) return null;
-            type = Type.GetType(attribute.AttributeType.FullName) ?? type;
+            type = Type.GetType(attribute.AttributeType.AssemblyQualifiedName()) ?? type;
             (Type[] types, object[] args) = BuildConstructorData(attribute.ConstructorArguments);
             var cons = type.GetConstructor(types);
             object o = cons.Invoke(args);
@@ -61,7 +61,7 @@ namespace GameCore.Net.Sync.Extensions
             return o;
         }
 
-        public static T ToAttributeObject<T>(this CustomAttribute attribute) where T : System.Attribute
+        public static T ToAttributeObject<T>(this CustomAttribute attribute) where T : Attribute
         {
             return attribute.ToAttributeObject(typeof(T)) as T;
         }

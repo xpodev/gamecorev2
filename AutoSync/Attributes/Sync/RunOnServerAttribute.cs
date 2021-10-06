@@ -8,8 +8,6 @@ namespace GameCore.Net.Sync
     [AttributeUsage(AttributeTargets.Method)]
     public class RunOnServerAttribute : SynchronizeCallAttribute
     {
-        public new Authority Authority => Authority.Client;
-
         public RunOnServerAttribute(bool executeOnAuthority = false) : base(Authority.Client, executeOnAuthority)
         {
 

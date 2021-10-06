@@ -7,7 +7,7 @@ namespace GameCore.Net.Sync
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
     public class NetworkConfigAttribute : Attribute
     {
-        public Type ConfigurationType { get; }
+        public Type ConfigurationType { get; set; }
 
         public NetworkConfigAttribute(Type configType)
         {
@@ -23,6 +23,7 @@ namespace GameCore.Net.Sync
             {
                 throw new ArgumentException($"Argument must have {typeof(NetworkManagerAttribute).Name} attribute", nameof(configType));
             }
+            ConfigurationType = configType;
         }
     }
 }

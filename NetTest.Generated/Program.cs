@@ -2,7 +2,10 @@
 //#define AUTO_SYNC_TEST
 
 using System;
+using GameCore.Net;
 using GameCore.Net.Sync;
+
+[assembly: NetworkConfig(typeof(NetTest.Generated.NetworkManager))]
 
 namespace NetTest.Generated
 {
@@ -35,6 +38,7 @@ namespace NetTest.Generated
         public void DoOnServer_CallFromClient()
         {
             Console.WriteLine("This is called from the client and runs on the server");
+            ClientLog("Hello, client!");
         }
 
         [ServerSide]
@@ -44,7 +48,13 @@ namespace NetTest.Generated
             WriteWorks();
         }
 
-        public void WriteWorks()
+        [RunOnClient]
+        public static void ClientLog(string message)
+        {
+            Console.WriteLine("WriteOnClient: " + message);
+        }
+
+        public static void WriteWorks()
         {
             Console.WriteLine("Works!");
         }
@@ -191,6 +201,25 @@ namespace NetTest.Generated
 #endif
 
         #endregion
+    }
+
+    [MessageType("Id")]
+    public class CustomMessage : Message<int>
+    {
+        public CustomMessage(int id) : base(id)
+        {
+
+        }
+    }
+
+    [NetworkManager(typeof(CustomMessage), MessageSenderName = "SendMessage")]
+    public class NetworkManager
+    {
+        [CustomFunctionCall("Message")]
+        public static void SendMessage(CustomMessage myMessage)
+        {
+            Console.WriteLine("Sending message: " + myMessage.ToString());
+        }
     }
 
     class Program

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Collections.Generic;
@@ -8,6 +7,17 @@ namespace GameCore.Net.Sync.Extensions
 {
     public static class TypeDefinitionExtensions
     {
+        /// <summary>
+        /// This is the same as <c>Type.AssemblyQualifiedName</c>.
+        /// </summary>
+        /// <param name="type">The type to get the name for.</param>
+        /// <returns>The fully qualified name of a type, including the assembly containing it.</returns>
+        /// <see cref="https://docs.microsoft.com/en-us/dotnet/api/system.type.assemblyqualifiedname"/>
+        public static string AssemblyQualifiedName(this TypeReference type)
+        {
+            return System.Reflection.Assembly.CreateQualifiedName(type.Scope.Name, type.FullName);
+        }
+
         /// <summary>
         /// Is childTypeDef a subclass of parentTypeDef. Does not test interface inheritance
         /// </summary>
@@ -48,6 +58,18 @@ namespace GameCore.Net.Sync.Extensions
                 properties.AddRange(type.Properties);
             } while ((type = type.BaseType?.Resolve()) != null && type.FullName != baseType.FullName);
             return properties;
+        }
+
+        public static MethodDefinition GetMethod(this TypeDefinition type, string name)
+        {
+            foreach (MethodDefinition method in type.Methods)
+            {
+                if (method.Name == name)
+                {
+                    return method;
+                }
+            }
+            return null;
         }
 
         public static MethodDefinition GetMethod(this TypeDefinition type, string name, params TypeReference[] argsTypes)

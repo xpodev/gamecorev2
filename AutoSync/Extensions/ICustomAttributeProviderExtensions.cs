@@ -36,11 +36,7 @@ namespace GameCore.Net.Sync.Extensions
         {
             if (o.GetAttribute(typeof(AuthorityCodeAttribute)) is AuthorityCodeAttribute authorityCode)
             {
-                if (authorityCode.Authority != authority)
-                {
-                    return false;
-                }
-                return true;
+                return authorityCode.Authority == authority;
             }
             return defaultValue;
         }

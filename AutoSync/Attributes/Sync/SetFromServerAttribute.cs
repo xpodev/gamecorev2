@@ -8,8 +8,6 @@ namespace GameCore.Net.Sync
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class SetFromServerAttribute : SynchronizeValueAttribute
     {
-        public new Authority Authority => Authority.Server;
-
         public SetFromServerAttribute(bool executeOnAuthority = true) : base(Authority.Server, executeOnAuthority)
         {
 

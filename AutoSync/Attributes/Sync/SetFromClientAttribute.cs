@@ -9,8 +9,6 @@ namespace GameCore.Net.Sync
     [AttributeUsage(AttributeTargets.Property)]
     public class SetFromClientAttribute : SynchronizeValueAttribute
     {
-        public new Authority Authority => Authority.Client;
-
         public SetFromClientAttribute(bool executeOnAuthority = true) : base(Authority.Client, executeOnAuthority)
         {
 

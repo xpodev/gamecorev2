@@ -7,16 +7,18 @@ namespace GameCore.Net.Sync
     {
         public bool Multicast { get; set; }
 
+        public bool Reliable { get; set; }
+
         public float Priority { get; set; }
 
         public Authority Authority { get; }
 
         public bool ExecuteOnAuthority { get; }
 
-        public SynchronizeCallAttribute(Authority target, bool executeOnAuthority = false)
+        public SynchronizeCallAttribute(Authority authority, bool executeOnAuthority = false)
         {
-            Authority = target;
             ExecuteOnAuthority = executeOnAuthority;
+            Authority = authority;
         }
     }
 }

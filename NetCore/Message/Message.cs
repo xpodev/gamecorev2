@@ -1,6 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using GameCore.Serialization;
+using GameCore.Net.Sync;
 
 
 namespace GameCore.Net
@@ -86,6 +86,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(byte[]), Direct = true, Strict= true)]
         public Message<T> Insert(byte[] data)
         {
             buffer.Write(data, 0, data.Length);
@@ -97,6 +98,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(bool), Direct = true, Strict = true)]
         public Message<T> Insert(bool data)
         {
             writer.Write(data);
@@ -108,6 +110,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(char), Direct = true, Strict = true)]
         public Message<T> Insert(char data)
         {
             writer.Write(data);
@@ -119,6 +122,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(byte), Direct = true, Strict = true)]
         public Message<T> Insert(byte data)
         {
             writer.Write(data);
@@ -130,6 +134,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(sbyte), Direct = true, Strict = true)]
         public Message<T> Insert(sbyte data)
         {
             writer.Write(data);
@@ -141,6 +146,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(short), Direct = true, Strict = true)]
         public Message<T> Insert(short data)
         {
             writer.Write(data);
@@ -152,6 +158,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(ushort), Direct = true, Strict = true)]
         public Message<T> Insert(ushort data)
         {
             writer.Write(data);
@@ -163,6 +170,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(int), Direct = true, Strict = true)]
         public Message<T> Insert(int data)
         {
             writer.Write(data);
@@ -174,6 +182,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(uint), Direct = true, Strict = true)]
         public Message<T> Insert(uint data)
         {
             writer.Write(data);
@@ -185,6 +194,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(long), Direct = true, Strict = true)]
         public Message<T> Insert(long data)
         {
             writer.Write(data);
@@ -196,6 +206,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(ulong), Direct = true, Strict = true)]
         public Message<T> Insert(ulong data)
         {
             writer.Write(data);
@@ -207,6 +218,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(float), Direct = true, Strict = true)]
         public Message<T> Insert(float data)
         {
             writer.Write(data);
@@ -218,6 +230,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(double), Direct = true, Strict = true)]
         public Message<T> Insert(double data)
         {
             writer.Write(data);
@@ -229,6 +242,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        [TypeSerializer(typeof(string), Direct = true, Strict = true)]
         public Message<T> Insert(string data)
         {
             writer.Write(data);

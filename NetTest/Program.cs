@@ -1,10 +1,11 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using GameCore.Net.Sync;
-using GameCore.Net.Sync.Generators;
+using GameCore.Net.Sync.Processors;
 using GameCore.Net.Sync.Extensions;
 using GameCore;
 
@@ -91,6 +92,10 @@ namespace NetTest
 
                 if (item is MethodDefinition method)
                 {
+                    if (method.IsConstructor)
+                    {
+                        return Target.All;
+                    }
                     if (!method.IsStatic && method.DeclaringType.HasAttribute(typeof(SynchronizeClassAttribute)))
                         throw new Exception($"Shared method in a synchronized class must be static. ({method})");
 
@@ -157,7 +162,38 @@ namespace NetTest
             }
         }
 
-        static void MakeSyncedWithShared(string inputPath, string outputPath)
+        static void MakeSynced(string assemblyPath, SynchronizationSettings settings, Authority authority)
+        {
+            //AppDomain appDomain = AppDomain.CreateDomain($"AutoSync.{authority}");
+
+            //using (Stream assemblyStream = File.OpenRead(assemblyPath))
+            //{
+            //    byte[] data = new byte[assemblyStream.Length];
+            //    assemblyStream.Read(data, 0, data.Length);
+            //    appDomain.Load(data);
+            //}
+
+            using (Stream assemblyStream = File.Open(assemblyPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                using (AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(assemblyStream))
+                {
+                    settings.MessageSettings = ReadMessageSettingsFrom(assembly);
+                    settings.Authority = authority;
+                    if (!new AssemblyProcessor(assembly).Process(settings))
+                    {
+                        Console.WriteLine($"{authority} assembly synchronization failed.");
+                    }
+                    else
+                        Console.WriteLine($"{authority} assembly synchronization succeeded.");
+
+                    assembly.Write();
+                }
+            }
+
+            //AppDomain.Unload(appDomain);
+        }
+
+        static (string, string, string) PrepareSyncWithShared(string inputPath, string outputPath)
         {
             Version version;
             ModuleKind moduleKind;
@@ -169,7 +205,7 @@ namespace NetTest
                     version = assemblyDefinition.Name.Version;
                     moduleKind = assemblyDefinition.MainModule.Kind;
 
-                    AssemblyProcessor.ProcessAssembly(assemblyDefinition);
+                    AssemblyPreProcessor.ProcessAssembly(assemblyDefinition);
                     assemblyDefinition.Write();
                 }
             }
@@ -212,28 +248,20 @@ namespace NetTest
                 }
 
                 sourceAssembly.Write();
-
-                AssemblyGenerator clientGenerator = new AssemblyGenerator(clientAssembly);
-                AssemblyGenerator serverGenerator = new AssemblyGenerator(serverAssembly);
-
-                clientGenerator.MakeSynced(Authority.Client);
-                serverGenerator.MakeSynced(Authority.Server);
-
-                clientAssembly.Write();
-                serverAssembly.Write();
             }
+
+            return (clientPath, serverPath, targetPath);
         }
 
-        static void MakeSyncedWithoutShared(string inputPath, string outputPath)
+        static (string, string, string) PrepareSyncWithoutShared(string inputPath, string outputPath)
         {
             string clientPath = string.Format(outputPath, "Client");
             string serverPath = string.Format(outputPath, "Server");
 
-            using (AssemblyDefinition 
-                assemblyDefinition = AssemblyDefinition.ReadAssembly(inputPath, new ReaderParameters() { ReadWrite = true })
-                )
+
+            using (AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(inputPath, new ReaderParameters() { ReadWrite = true }))
             {
-                AssemblyProcessor.ProcessAssembly(assemblyDefinition);
+                AssemblyPreProcessor.ProcessAssembly(assemblyDefinition);
                 assemblyDefinition.Write();
             }
 
@@ -242,27 +270,82 @@ namespace NetTest
             assembly.Repack(clientPath);
             assembly.Repack(serverPath);
 
-            using (AssemblyDefinition
-                clientAssembly = AssemblyDefinition.ReadAssembly(clientPath, new ReaderParameters() { ReadWrite = true }),
-                serverAssembly = AssemblyDefinition.ReadAssembly(serverPath, new ReaderParameters() { ReadWrite = true })
-                )
+            return (clientPath, serverPath, null);
+        }
+
+        static MessageSettings DefaultSettingsFor(TypeDefinition messageType)
+        {
+            return GetMessageSettingsFrom(messageType, ".ctor");
+        }
+
+        static MessageSettings ReadMessageSettingsFrom(TypeDefinition messageType)
+        {
+            if (messageType.GetAttribute(typeof(MessageTypeAttribute)) is MessageTypeAttribute messageSettings)
             {
-                AssemblyGenerator clientGenerator = new AssemblyGenerator(clientAssembly);
-                AssemblyGenerator serverGenerator = new AssemblyGenerator(serverAssembly);
-
-                clientGenerator.MakeSynced(Authority.Client);
-                serverGenerator.MakeSynced(Authority.Server);
-
-                clientAssembly.Write();
-                serverAssembly.Write();
+                return GetMessageSettingsFrom(messageType, messageSettings.ConstructorName ?? ".ctor");
             }
+            return DefaultSettingsFor(messageType);
+        }
+
+        static MessageSettings GetMessageSettingsFrom(TypeDefinition messageType, string constructorName)
+        {
+            MethodDefinition messageConstructor = messageType.GetMethod(constructorName);
+
+            if (messageConstructor.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
+            {
+                if (customCall.Args.Length != messageConstructor.Parameters.Count)
+                    throw new Exception($"Message constructor {messageConstructor.FullName} has a custom call with a different amount than its parameter");
+            }
+
+            if (!messageConstructor.IsConstructor)
+            {
+                if (!messageConstructor.IsStatic)
+                    throw new Exception($"Message constructor {messageConstructor.FullName} must be static");
+
+                if (messageConstructor.Parameters.Count != 1 || messageConstructor.Parameters[0].ParameterType != messageType)
+                    throw new Exception($"Message constructor {messageConstructor.FullName} must get a single parameter of type {messageType.FullName}");
+                else if (messageConstructor.ReturnType.Resolve() != messageType)
+                    throw new Exception($"Message constructor {messageConstructor.FullName} must return an object of type {messageType.FullName}");
+            }
+
+            return new MessageSettings()
+            {
+                MessageConstructor = messageConstructor,
+                MessageType = messageType
+            };
+        }
+
+        static MessageSettings ReadMessageSettingsFrom(AssemblyDefinition assembly)
+        {
+            // todo: make this work with reflection instead of Mono.Cecil
+            MessageSettings settings = null;
+
+            if (assembly.GetCustomAttribute(typeof(NetworkConfigAttribute)) is CustomAttribute configAttribute)
+            //if (assembly.GetAttribute(typeof(NetworkConfigAttribute)) is NetworkConfigAttribute config)
+            {
+                TypeDefinition networkConfigurationType = (configAttribute.ConstructorArguments[0].Value as TypeReference).Resolve();
+                //TypeDefinition networkConfigurationType = assembly.MainModule.ImportReference(config.ConfigurationType).Resolve();
+                if (networkConfigurationType.GetCustomAttribute(typeof(NetworkManagerAttribute)) is CustomAttribute networkManagerAttribute)
+                {
+                    settings = ReadMessageSettingsFrom((networkManagerAttribute.ConstructorArguments[0].Value as TypeReference).Resolve());
+
+                    settings.MessageSenderMethod = networkConfigurationType.GetMethod(
+                        networkManagerAttribute.Properties.First(
+                            item => item.Name == nameof(NetworkManagerAttribute.MessageSenderName)
+                            ).Argument.Value as string);
+                    if (!settings.MessageSenderMethod.IsStatic)
+                        throw new Exception($"Message sending method {settings.MessageSenderMethod.FullName} must be static");
+                }
+            }
+
+            return settings;
         }
 
         static void Main()
         {
             // todo: make shared only if static method
 
-            bool shared = true;
+            bool shared = false;
             string path = shared ? "Generated-Shared/" : "Generated-NotShared";
 
             if (!Directory.Exists(path))
@@ -273,13 +356,36 @@ namespace NetTest
             string assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), "NetTest.Generated.dll");
             string targetPath = Path.Combine(Directory.GetCurrentDirectory(), path, "NetTest.Generated.{0}.dll");
 
+            string clientLibraryPath, serverLibraryPath, sharedLibraryPath;
+
+            (clientLibraryPath, serverLibraryPath, sharedLibraryPath) = shared ? PrepareSyncWithShared(assemblyPath, targetPath) : PrepareSyncWithoutShared(assemblyPath, targetPath);
+
             if (shared)
             {
-                MakeSyncedWithShared(assemblyPath, targetPath);
-            } else
-            {
-                MakeSyncedWithoutShared(assemblyPath, targetPath);
+                using (Stream assemblyStream = File.OpenRead(sharedLibraryPath))
+                {
+                    byte[] data = new byte[assemblyStream.Length];
+                    assemblyStream.Read(data, 0, data.Length);
+                    System.Reflection.Assembly.Load(data);
+                }
             }
+
+            SynchronizationSettings settings = new SynchronizationSettings()
+            {
+                Serializers = new SerializationTable(),
+                MessageSettings = null,
+                IncludeNonAuthorityClasses = true,
+                IncludeNonAuthorityMethods = true,
+                IncludeNonAuthorityProperties = true,
+                IncludeNonAuthorityNestedClasses = true,
+                CreateSharedLibrary = shared,
+                SharedLibraryPath = sharedLibraryPath,
+                ClientLibraryPath = clientLibraryPath,
+                ServerLibraryPath = serverLibraryPath
+            };
+
+            MakeSynced(clientLibraryPath, settings, Authority.Client);
+            MakeSynced(serverLibraryPath, settings, Authority.Server);
         }
     }
 }

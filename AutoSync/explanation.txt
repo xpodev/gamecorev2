@@ -1,3 +1,20 @@
+RPC:
+create message (from message constructor)
+(maybe create a local variable for it)
+for arg in args:
+	push arg
+	serialize if needed
+	call add
+	if rettype == message type: continue
+	if rettype == void: ldlocal message (or create a dup)
+	if rettype == bool: br_false error
+push args according to message sender spec || use default (only message)
+call message sender
+label error:
+
+	
+
+
 Message related settings:
 Type type of message (class/struct) (default=Sync.Message)
 string constructor name (+args: object[]) (default=".ctor"/type.name)
@@ -263,3 +280,9 @@ SynchronizationSettings:
 BuildSettings:
 	Authority: Authority - the authority these settings are relevant for
 	OnlyAuthorityMembers: bool - whether or not to only include members with the same authority as the current target authority
+
+
+
+TODO:
+make a nice wrapper around types so we can accesss generic type instances as if they were their own classes
+that is to make accessing members and base classes more easily
