@@ -4,7 +4,7 @@ namespace GameCore.Net.Sync.Internal
 {
     internal class CustomCallWrapper
     {
-        public object[] Arguments { get; }
+        public string[] Arguments { get; }
 
         public CustomCallWrapper(CustomFunctionCallAttribute customCall)
         {

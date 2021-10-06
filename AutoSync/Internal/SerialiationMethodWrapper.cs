@@ -17,7 +17,6 @@ namespace GameCore.Net.Sync.Internal
 
         public TypeWrapper Type { get; }
 
-
         public SerializationMethodWrapper(MethodReference reference) : base(reference)
         {
             if (!(AsDefinition.GetAttribute(typeof(SerializationSpecificationAttribute)) is SerializationSpecificationAttribute spec))

@@ -4,11 +4,13 @@ namespace GameCore.Net.Sync
 {
     public class MessageSettings
     {
-        public TypeDefinition MessageType { get; set; }
+        public TypeReference MessageType { get; set; }
 
-        public MethodDefinition MessageConstructor { get; set; }
+        public TypeReference MessageConfigurationType { get; set; }
 
-        public MethodDefinition MessageSenderMethod { get; set; }
+        public MethodReference MessageConstructor { get; set; }
+
+        public MethodReference MessageSenderMethod { get; set; }
 
         public MethodReference MessageIDGetter { get; set; }
     }

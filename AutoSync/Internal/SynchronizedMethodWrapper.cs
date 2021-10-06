@@ -60,27 +60,28 @@ namespace GameCore.Net.Sync.Internal
 
             foreach (ParameterDefinition parameter in MethodReference.Parameters)
             {
-                SerializationMethodWrapper serializer = settings.Deserializers.GetSerializer(parameter.ParameterType);
+                SerializationMethodWrapper deserializer = settings.SerializationTable.GetDeserializer(parameter.ParameterType);
 
-                if (serializer == null)
+                if (deserializer == null)
                     // todo: replace with actual UnserializableType exception for deserialization
-                    throw new Exception($"UnserializableType");
+                    throw new Exception($"UnserializableType: {parameter.ParameterType.FullName}");
 
-                // todo: add more custom arguments
-                serializer.GenerateCall(il, new Dictionary<string, object>()
+                if (deserializer.HasCustomCall)
                 {
-                    { "Message", messageParameter }
-                });
+                    // todo: add more custom arguments
+                    deserializer.GenerateCall(il, new Dictionary<string, object>()
+                    {
+                        { "Message", messageParameter }
+                    });
+                }
+                else
+                {
+                    ILGenerator.GenerateLoadArgument(il, messageParameter);
+                    deserializer.GenerateCall(il);
+                }
             }
 
             GenerateCall(il);
-
-            if (!MethodReference.ReturnType.IsEqualTo(MethodReference.Module.TypeSystem.Boolean))
-            {
-                //if (!MethodReference.ReturnType.IsEqualTo(MethodReference.Module.TypeSystem.Void))
-                //    il.Emit(OpCodes.Pop);
-                //il.Emit(OpCodes.Ldc_I4_1);
-            }
 
             il.Emit(OpCodes.Ret);
 

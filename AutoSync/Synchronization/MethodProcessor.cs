@@ -54,7 +54,7 @@ namespace GameCore.Net.Sync.Processors
 
                 // creating the message
                 {
-                    if (Item.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
+                    if (settings.MessageSettings.MessageConstructor.Resolve().GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
                     {
                         ILGenerator.GenerateCustomFunctionCall(il, new CustomCallWrapper(customCall), new Dictionary<string, object>()
                         {
@@ -69,7 +69,7 @@ namespace GameCore.Net.Sync.Processors
                         instructions.Add(ILGenerator.CreateLoadValue(il, sync.Id));
                     }
                     instructions.Add(il.Create(
-                            settings.MessageSettings.MessageConstructor.IsConstructor ? OpCodes.Newobj : OpCodes.Call,
+                            settings.MessageSettings.MessageConstructor.Resolve().IsConstructor ? OpCodes.Newobj : OpCodes.Call,
                             settings.MessageSettings.MessageConstructor
                             ));
                     ILGenerator.GenerateSetLocal(il, messageVariable, instructions);
@@ -92,7 +92,7 @@ namespace GameCore.Net.Sync.Processors
 
                     foreach (ParameterDefinition parameter in Item.Parameters)
                     {
-                        MethodReference serializer = settings.Serializers.GetSerializer(parameter.ParameterType).MethodReference;
+                        MethodReference serializer = settings.SerializationTable.GetSerializer(parameter.ParameterType)?.MethodReference;
                         if (serializer == null)
                         {
                             throw new Exception($"UnserializableType {parameter.ParameterType.FullName}");
@@ -120,7 +120,7 @@ namespace GameCore.Net.Sync.Processors
 
                         instructions.Add(il.Create(OpCodes.Call, Item.Module.ImportReference(serializer)));
 
-                        if (settings.MessageSettings.MessageType.IsClassAssignableFrom(serializer.ReturnType.Resolve()))
+                        if (settings.MessageSettings.MessageType.Resolve().IsClassAssignableFrom(serializer.ReturnType.Resolve()))
                         {
                             continue;
                         }
@@ -140,7 +140,7 @@ namespace GameCore.Net.Sync.Processors
                 }
 
                 {
-                    if (settings.MessageSettings.MessageSenderMethod.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
+                    if (settings.MessageSettings.MessageSenderMethod.Resolve().GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
                     {
                         ILGenerator.GenerateCustomFunctionCall(il, new CustomCallWrapper(customCall), new Dictionary<string, object>()
                         {

@@ -168,7 +168,14 @@ namespace NetTest
             {
                 using (AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(assemblyStream))
                 {
-                    settings.MessageSettings = ReadMessageSettingsFrom(assembly);
+                    settings.NetworkManager = GetNetworkManagerTypeFrom(assembly);
+                    settings.MessageSettings = GetMessageSettingsFrom(settings.NetworkManager);
+
+                    settings.MessageSettings.MessageConstructor = settings.NetworkManager.Module.ImportReference(settings.MessageSettings.MessageConstructor);
+                    settings.MessageSettings.MessageType = settings.NetworkManager.Module.ImportReference(settings.MessageSettings.MessageType);
+                    settings.MessageSettings.MessageIDGetter = settings.NetworkManager.Module.ImportReference(settings.MessageSettings.MessageIDGetter);
+                    settings.MessageSettings.MessageSenderMethod = settings.NetworkManager.Module.ImportReference(settings.MessageSettings.MessageSenderMethod);
+
                     settings.Authority = authority;
                     if (!new AssemblyProcessor(assembly).Process(settings))
                     {
@@ -249,6 +256,19 @@ namespace NetTest
             return (clientPath, serverPath, null);
         }
 
+        static TypeDefinition GetNetworkManagerTypeFrom(AssemblyDefinition assembly)
+        {
+            if (assembly.GetCustomAttribute(typeof(NetworkConfigAttribute)) is CustomAttribute configAttribute)
+            {
+                TypeDefinition networkConfigurationType = (configAttribute.ConstructorArguments[0].Value as TypeReference).Resolve();
+                if (networkConfigurationType.GetCustomAttribute(typeof(NetworkManagerAttribute)) is CustomAttribute networkManagerAttribute)
+                {
+                    return networkConfigurationType;
+                }
+            }
+            return null;
+        }
+
         static MessageSettings DefaultSettingsFor(TypeDefinition messageType)
         {
             return GetMessageSettingsFrom(messageType, ".ctor", "Id");
@@ -258,30 +278,44 @@ namespace NetTest
         {
             if (messageType.GetAttribute(typeof(MessageTypeAttribute)) is MessageTypeAttribute messageSettings)
             {
-                return GetMessageSettingsFrom(messageType, messageSettings.ConstructorName ?? ".ctor", messageSettings.IdPropertyName ?? "Id");
+                TypeReference messageRedirectedType = null;
+                if (messageType.GetCustomAttribute(typeof(ForwardedMessageTypeAttribute)) is CustomAttribute forwardedMessageType)
+                {
+                    messageRedirectedType = forwardedMessageType.ConstructorArguments[0].Value as TypeReference;
+                }
+                return GetMessageSettingsFrom(
+                    messageType, 
+                    messageSettings.ConstructorName ?? ".ctor", 
+                    messageSettings.IdPropertyName ?? "Id", 
+                    messageRedirectedType
+                    );
             }
             return DefaultSettingsFor(messageType);
         }
 
-        static MessageSettings GetMessageSettingsFrom(TypeDefinition messageType, string constructorName, string idPropertyName)
+        static MessageSettings GetMessageSettingsFrom(TypeDefinition configType, string constructorName, string idPropertyName, TypeReference messageType = null)
         {
-            MethodDefinition messageConstructor = messageType.GetMethod(constructorName);
+            messageType = messageType ?? configType;
+
+            MethodDefinition messageConstructor = configType.GetMethod(constructorName) ?? messageType?.Resolve().GetMethod(constructorName);
             TypeReference declaringType;
             MethodReference idMethod;
 
             {
                 PropertyDefinition idProperty;
-                (idProperty, declaringType) = messageType.GetPropertyInHierarchy(idPropertyName);
+                (idProperty, declaringType) = configType.GetPropertyInHierarchy(idPropertyName);
+                if (idProperty == null) (idProperty, declaringType) = messageType.GetPropertyInHierarchy(idPropertyName);
                 idMethod = idProperty?.GetMethod?.MakeGeneric(declaringType);
             }
 
             if (idMethod == null)
             {
-                (idMethod, declaringType) = messageType.GetMethodInHierarchy(idPropertyName);
+                (idMethod, declaringType) = configType.GetMethodInHierarchy(idPropertyName);
+                if (idMethod == null) (idMethod, declaringType) = messageType.GetMethodInHierarchy(idPropertyName);
                 idMethod = idMethod?.MakeGeneric(declaringType);
 
                 if (idMethod == null)
-                    throw new Exception($"Couldn't find member {idPropertyName} in type {messageType.FullName}");
+                    throw new Exception($"Couldn't find member {idPropertyName} in type {configType.FullName}");
             }
 
             if (messageConstructor.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
@@ -289,47 +323,40 @@ namespace NetTest
                 if (customCall.Args.Length != messageConstructor.Parameters.Count)
                     throw new Exception($"Message constructor {messageConstructor.FullName} has a custom call with a different amount than its parameter");
             }
-
-            if (!messageConstructor.IsConstructor)
+            else if (!messageConstructor.IsConstructor)
             {
                 if (!messageConstructor.IsStatic)
                     throw new Exception($"Message constructor {messageConstructor.FullName} must be static");
 
-                if (messageConstructor.Parameters.Count != 1 || messageConstructor.Parameters[0].ParameterType != messageType)
-                    throw new Exception($"Message constructor {messageConstructor.FullName} must get a single parameter of type {messageType.FullName}");
-                else if (messageConstructor.ReturnType.Resolve() != messageType)
-                    throw new Exception($"Message constructor {messageConstructor.FullName} must return an object of type {messageType.FullName}");
+                if (messageConstructor.Parameters.Count != 1 || messageConstructor.Parameters[0].ParameterType != configType)
+                    throw new Exception($"Message constructor {messageConstructor.FullName} must get a single parameter of type {configType.FullName}");
+                else if (messageConstructor.ReturnType.Resolve() != configType)
+                    throw new Exception($"Message constructor {messageConstructor.FullName} must return an object of type {configType.FullName}");
             }
 
             return new MessageSettings()
             {
                 MessageConstructor = messageConstructor,
                 MessageType = messageType,
-                MessageIDGetter = messageType.Module.ImportReference(idMethod)
+                MessageIDGetter = idMethod
             };
         }
 
-        static MessageSettings ReadMessageSettingsFrom(AssemblyDefinition assembly)
+        static MessageSettings GetMessageSettingsFrom(TypeDefinition networkConfigurationType)
         {
             // todo: make this work with reflection instead of Mono.Cecil
             MessageSettings settings = null;
 
-            if (assembly.GetCustomAttribute(typeof(NetworkConfigAttribute)) is CustomAttribute configAttribute)
-            //if (assembly.GetAttribute(typeof(NetworkConfigAttribute)) is NetworkConfigAttribute config)
+            if (networkConfigurationType.GetCustomAttribute(typeof(NetworkManagerAttribute)) is CustomAttribute networkManagerAttribute)
             {
-                TypeDefinition networkConfigurationType = (configAttribute.ConstructorArguments[0].Value as TypeReference).Resolve();
-                //TypeDefinition networkConfigurationType = assembly.MainModule.ImportReference(config.ConfigurationType).Resolve();
-                if (networkConfigurationType.GetCustomAttribute(typeof(NetworkManagerAttribute)) is CustomAttribute networkManagerAttribute)
-                {
-                    settings = ReadMessageSettingsFrom((networkManagerAttribute.ConstructorArguments[0].Value as TypeReference).Resolve());
+                settings = ReadMessageSettingsFrom((networkManagerAttribute.ConstructorArguments[0].Value as TypeReference).Resolve());
 
-                    settings.MessageSenderMethod = networkConfigurationType.GetMethod(
-                        networkManagerAttribute.Properties.First(
-                            item => item.Name == nameof(NetworkManagerAttribute.MessageSenderName)
-                            ).Argument.Value as string);
-                    if (!settings.MessageSenderMethod.IsStatic)
-                        throw new Exception($"Message sending method {settings.MessageSenderMethod.FullName} must be static");
-                }
+                settings.MessageSenderMethod = networkConfigurationType.GetMethod(
+                    networkManagerAttribute.Properties.First(
+                        item => item.Name == nameof(NetworkManagerAttribute.MessageSenderName)
+                        ).Argument.Value as string);
+                if (!settings.MessageSenderMethod.Resolve().IsStatic)
+                    throw new Exception($"Message sending method {settings.MessageSenderMethod.FullName} must be static");
             }
 
             return settings;
@@ -368,8 +395,7 @@ namespace NetTest
 
             SynchronizationSettings settings = new SynchronizationSettings()
             {
-                Serializers = new SerializationTable(),
-                Deserializers = new SerializationTable(),
+                SerializationTable = new SerializationTable(),
                 MessageSettings = null,
                 IncludeNonAuthorityClasses = true,
                 IncludeNonAuthorityMethods = true,

@@ -411,6 +411,7 @@ namespace GameCore.Net
         /// </summary>
         /// <param name="data">The data to insert.</param>
         /// <returns><c>this</c> message.</returns>
+        //[TypeDeserializer(typeof(string), Direct = true, Strict = true)]
         public Message<T> Extract(out string data)
         {
             data = reader.ReadString();
@@ -426,6 +427,13 @@ namespace GameCore.Net
         {
             obj.DeserializeFrom(this);
             return this;
+        }
+
+        [TypeDeserializer(typeof(string), Direct = true, Strict = true)]
+        public string ExtractString()
+        {
+            Extract(out string s);
+            return s;
         }
     }
 }

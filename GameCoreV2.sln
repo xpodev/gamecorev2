@@ -73,6 +73,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTest", "NetTest\NetTest.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTest.Generated", "NetTest.Generated\NetTest.Generated.csproj", "{58181867-E7A5-499F-B6C3-5302254472FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Riptide.AutoSync", "Riptide.AutoSync\Riptide.AutoSync.csproj", "{2A38E3C5-663A-4A84-9A1C-B62E440052B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -407,6 +409,18 @@ Global
 		{58181867-E7A5-499F-B6C3-5302254472FD}.Release|x64.Build.0 = Release|Any CPU
 		{58181867-E7A5-499F-B6C3-5302254472FD}.Release|x86.ActiveCfg = Release|Any CPU
 		{58181867-E7A5-499F-B6C3-5302254472FD}.Release|x86.Build.0 = Release|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Debug|x64.Build.0 = Debug|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Debug|x86.Build.0 = Debug|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Release|x64.ActiveCfg = Release|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Release|x64.Build.0 = Release|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Release|x86.ActiveCfg = Release|Any CPU
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -425,6 +439,7 @@ Global
 		{DC5F9798-CAC4-4236-A512-A69BE8C95392} = {764D36EE-1713-4A11-866B-CE16ED17D765}
 		{0E522956-B652-4C7A-8DF5-443403DB6047} = {764D36EE-1713-4A11-866B-CE16ED17D765}
 		{9FA0B7C7-7545-4567-80E3-5100B63D67DD} = {764D36EE-1713-4A11-866B-CE16ED17D765}
+		{2A38E3C5-663A-4A84-9A1C-B62E440052B6} = {764D36EE-1713-4A11-866B-CE16ED17D765}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {05FBE4D5-42B2-4D70-9B6D-251B8C7E7FF4}

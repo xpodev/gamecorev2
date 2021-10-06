@@ -39,13 +39,22 @@ namespace GameCore.Net.Sync.Processors
 
             if (definition.GetAttribute(typeof(SerializationSpecificationAttribute)) is SerializationSpecificationAttribute spec)
             {
-                if (!spec.Direct && !definition.IsStatic) throw new System.Exception($"Serializer method {method} must be declared as static");
-                if (!method.HasParameters) throw new System.Exception($"Serializer method {method} must have at least 1 parameter of type {spec.Type}");
-                if (spec.Direct && !method.HasThis && method.Parameters.FirstOrDefault(p => settings.MessageSettings.MessageType.IsClassAssignableFrom(p.ParameterType.Resolve())) == null)
-                    throw new System.Exception($"Serializer method {method} is declared as Direct so it must have 1 paramter of type {settings.MessageSettings.MessageType}");
+                //if (!spec.Direct && !definition.IsStatic) throw new System.Exception($"Serializer method {method} must be declared as static");
+                //if (!method.HasParameters) throw new System.Exception($"Serializer method {method} must have at least 1 parameter of type {spec.Type}");
+                //if (spec.Direct && !method.HasThis && method.Parameters.FirstOrDefault(p => settings.MessageSettings.MessageType.Resolve().IsClassAssignableFrom(p.ParameterType.Resolve())) == null)
+                //    throw new System.Exception($"Serializer method {method} is declared as Direct so it must have 1 paramter of type {settings.MessageSettings.MessageType}");
 
-                (spec.Operation == SerializationOperation.Serialize ?settings.Serializers : settings.Deserializers)
-                    .RegisterSerializer(Item.Module.ImportReference(spec.Type), method, spec.Strict);
+                switch (spec.Operation)
+                {
+                    case SerializationOperation.Serialize:
+                        settings.SerializationTable.RegisterSerializer(Item.Module.ImportReference(spec.Type), method, spec.Strict);
+                        break;
+                    case SerializationOperation.Deserialize:
+                        settings.SerializationTable.RegisterDeserializer(Item.Module.ImportReference(spec.Type), method, settings);
+                        break;
+                    default:
+                        throw new System.Exception($"Invalid serialization operation: {spec.Operation}");
+                }
             }
         }
 
@@ -58,12 +67,20 @@ namespace GameCore.Net.Sync.Processors
 
             do
             {
+                if (type.Resolve().GetAttribute(typeof(MessageTypeAttribute)) is MessageTypeAttribute messageType)
+                {
+                    if (type.Resolve().GetCustomAttribute(typeof(ForwardedMessageTypeAttribute)) is CustomAttribute forwarded)
+                    {
+                        if (!(forwarded.ConstructorArguments[0].Value as TypeReference).Resolve().IsEqualTo(settings.MessageSettings.MessageType)) break;
+                    }
+                    else if (!type.IsEqualTo(settings.MessageSettings.MessageType)) break;
+                }
+
                 foreach (MethodDefinition method in type.Resolve().Methods)
                 {
                     RegisterSerializer(method.MakeGeneric(type), settings);
                 }
-                // todo: fix generic hierarchy traversal
-            } while ((type = type.IsGenericInstance ? null : type.Resolve().BaseType) != null);
+            } while ((type = type.Resolve().BaseType) != null);
         }
 
         public override bool Process(SynchronizationSettings settings)

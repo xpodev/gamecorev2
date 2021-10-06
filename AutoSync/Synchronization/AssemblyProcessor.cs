@@ -1,6 +1,7 @@
-﻿using Mono.Cecil;
-using GameCore.Net.Sync.Extensions;
-using System.Collections.Generic;
+﻿using GameCore.Net.Sync.Extensions;
+using GameCore.Net.Sync.Internal;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace GameCore.Net.Sync.Processors
 {
@@ -12,6 +13,17 @@ namespace GameCore.Net.Sync.Processors
         {
             // todo: move this outside
             settings.RPCDispatcher = new RPCDispatcher(new TypeDefinition("<AutoSync>", "RPCDispatcher", TypeAttributes.NotPublic));
+
+            settings.SerializationTable.Clear();
+
+            foreach (CustomAttribute attribute in settings.NetworkManager.CustomAttributes)
+            {
+                if (attribute.AttributeType.IsEqualTo(Item.MainModule.ImportReference(typeof(ExternalSerializersAttribute))))
+                {
+                    TypeDefinition type = Item.MainModule.ImportReference(attribute.ConstructorArguments[0].Value as TypeReference).Resolve();
+                    new TypeProcessor(type).RegisterSerializers(settings);
+                }
+            }
 
             foreach (TypeDefinition type in Item.MainModule.Types.Copy())
             {
@@ -28,8 +40,27 @@ namespace GameCore.Net.Sync.Processors
                 }
             }
 
-            Item.MainModule.Types.Add(settings.RPCDispatcher.DeclaringType);
-            settings.RPCDispatcher.GenerateRPCDispathcerType(settings);
+            {
+                Item.MainModule.Types.Add(settings.RPCDispatcher.DeclaringType);
+                MethodDefinition dispatcher = settings.RPCDispatcher.GenerateRPCDispathcerType(settings);
+
+                MethodDefinition dispatcherWrapper = new MethodDefinition(
+                    "DispatchMessage",
+                    MethodAttributes.Static | MethodAttributes.Public,
+                    dispatcher.ReturnType
+                );
+
+                ParameterDefinition messageParameter = new ParameterDefinition(settings.MessageSettings.MessageType);
+                dispatcherWrapper.Parameters.Add(messageParameter);
+
+                ILProcessor il = dispatcherWrapper.Body.GetILProcessor();
+
+                ILGenerator.GenerateLoadArgument(il, messageParameter);
+                il.Emit(OpCodes.Call, dispatcher);
+                il.Emit(OpCodes.Ret);
+
+                settings.NetworkManager.Methods.Add(dispatcherWrapper);
+            }
 
             return true;
         }

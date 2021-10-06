@@ -5,7 +5,7 @@ using System;
 using GameCore.Net;
 using GameCore.Net.Sync;
 
-[assembly: NetworkConfig(typeof(NetTest.Generated.NetworkManager))]
+[assembly: NetworkConfig(typeof(NetTest.Generated.RiptideNetworkManager))]
 
 namespace NetTest.Generated
 {
@@ -17,7 +17,7 @@ namespace NetTest.Generated
         {
             Console.WriteLine("This is called from the client and runs on the server");
             ClientLog0();
-            ClientLog1();
+            ClientLog1("Hello client");
             ClientLog2();
             ClientLog3();
         }
@@ -36,9 +36,9 @@ namespace NetTest.Generated
         }
 
         [RunOnClient]
-        public static void ClientLog1()
+        public static void ClientLog1(string message)
         {
-            Console.WriteLine("WriteOnClient1: nothing yet");
+            Console.WriteLine("WriteOnClient1: " + message);
         }
 
         [RunOnClient]
@@ -202,9 +202,10 @@ namespace NetTest.Generated
         #endregion
     }
 
-    [MessageType("Id")]
+    [MessageType]
     public class CustomMessage : Message<int>
     {
+        [CustomFunctionCall("Id")]
         public CustomMessage(int id) : base(id)
         {
 
@@ -216,6 +217,17 @@ namespace NetTest.Generated
     {
         [CustomFunctionCall("Message")]
         public static void SendMessage(CustomMessage myMessage)
+        {
+            Console.WriteLine("Sending message: " + myMessage.ToString());
+        }
+    }
+
+    [NetworkManager(typeof(GameCore.Riptide.MessageConfiguration), MessageSenderName = "SendMessage")]
+    [ExternalSerializers(typeof(GameCore.Riptide.MessageConfiguration))]
+    public class RiptideNetworkManager
+    {
+        [CustomFunctionCall("Message")]
+        public static void SendMessage(RiptideNetworking.Message myMessage)
         {
             Console.WriteLine("Sending message: " + myMessage.ToString());
         }

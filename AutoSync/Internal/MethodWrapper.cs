@@ -31,8 +31,38 @@ namespace GameCore.Net.Sync.Internal
                 new CustomCallWrapper(customCall) : null;
         }
 
+        public bool CheckCustomCall(IDictionary<string, TypeReference> parameters, bool strict)
+        {
+            if (parameters.Count != CustomCall.Arguments.Length) return false;
+            List<TypeReference> types = new List<TypeReference>();
+            foreach (string name in CustomCall.Arguments)
+            {
+                if (!parameters.TryGetValue(name, out TypeReference type)) return false;
+                types.Add(type);
+            }
+            return CheckCall(types, strict);
+        }
+
+        public bool CheckCall(ICollection<TypeReference> types, bool strict)
+        {
+            if (types.Count != MethodReference.Parameters.Count) return false;
+            if (strict)
+                foreach ((TypeReference type, ParameterDefinition parameter) 
+                    in new Zip<TypeReference, ParameterDefinition>(types, MethodReference.Parameters))
+                {
+                    if (!parameter.ParameterType.IsEqualTo(type)) return false;
+                }
+            else
+                foreach ((TypeReference type, ParameterDefinition parameter)
+                    in new Zip<TypeReference, ParameterDefinition>(types, MethodReference.Parameters))
+                {
+                    if (!parameter.ParameterType.Resolve().IsClassAssignableFrom(type.Resolve())) return false;
+                }
+            return true;
+        }
+
         /// <summary>
-        /// Generated a call to the method in the given instruction list (or in the <paramref name="il"/> body if it is <c>null</c>).
+        /// Generated a call to the method and stores the generated code in the given instruction list (or in the <paramref name="il"/> body if it is <c>null</c>).
         /// This function assumes all the parameters are already on the stack.
         /// </summary>
         /// <param name="il">The processor to use in order to create the instruction</param>
@@ -43,7 +73,7 @@ namespace GameCore.Net.Sync.Internal
         }
 
         /// <summary>
-        /// Generated a call to the method in the given instruction list (or in the <paramref name="il"/> body if it is <c>null</c>) using custom arguments.
+        /// Generated a custom call to the method and stores the generated code in the given instruction list (or in the <paramref name="il"/> body if it is <c>null</c>) using custom arguments.
         /// </summary>
         /// <param name="il">The processor to use in order to create the instruction</param>
         public void GenerateCall(ILProcessor il, IDictionary<string, object> arguments, IList<Instruction> instructions = null)
@@ -57,7 +87,7 @@ namespace GameCore.Net.Sync.Internal
         }
 
         /// <summary>
-        /// Generated a call to the method in the given instruction list (or in the <paramref name="il"/> body if it is <c>null</c>) using the given arguments.
+        /// Generated a call to the method and stores the generated code in the given instruction list (or in the <paramref name="il"/> body if it is <c>null</c>) using the given arguments.
         /// </summary>
         /// <param name="il">The processor to use in order to create the instruction</param>
         public void GenerateCall(ILProcessor il, IEnumerable<object> arguments, IList<Instruction> instructions = null)

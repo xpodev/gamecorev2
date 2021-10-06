@@ -33,7 +33,7 @@ namespace GameCore.Net.Sync
 
         internal void AddMethod(SynchronizedMethodWrapper method) => m_methods.Add(method);
 
-        public void GenerateRPCDispathcerType(SynchronizationSettings settings)
+        public MethodDefinition GenerateRPCDispathcerType(SynchronizationSettings settings)
         {
             foreach (SynchronizedMethodWrapper method in m_methods)
             {
@@ -42,7 +42,9 @@ namespace GameCore.Net.Sync
                 m_dispatchers.Add(new MethodWrapper(dispatcher));
             }
 
-            DeclaringType.Methods.Add(GenerateRPCDispatcherMethod(settings));
+            MethodDefinition dispatcherMethod = GenerateRPCDispatcherMethod(settings);
+            DeclaringType.Methods.Add(dispatcherMethod);
+            return dispatcherMethod;
         }
 
         public MethodDefinition GenerateRPCDispatcherMethod(SynchronizationSettings settings)

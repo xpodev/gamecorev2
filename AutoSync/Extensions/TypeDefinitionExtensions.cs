@@ -46,7 +46,7 @@ namespace GameCore.Net.Sync.Extensions
 
         public static bool IsClassAssignableFrom(this TypeDefinition child, TypeDefinition parent)
         {
-            return child == parent || child.IsSubclassOf(parent);
+            return child.IsEqualTo(parent) || child.IsSubclassOf(parent);
         }
 
         public static Collection<PropertyDefinition> AllProperties<T>(this TypeDefinition type)

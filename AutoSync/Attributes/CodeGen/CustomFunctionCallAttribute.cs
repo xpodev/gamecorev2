@@ -4,9 +4,9 @@ namespace GameCore.Net.Sync
 {
     public class CustomFunctionCallAttribute : Attribute
     {
-        public object[] Args { get; }
+        public string[] Args { get; }
 
-        public CustomFunctionCallAttribute(params object[] args)
+        public CustomFunctionCallAttribute(params string[] args)
         {
             Args = args;
         }

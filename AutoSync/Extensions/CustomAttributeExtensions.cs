@@ -25,8 +25,18 @@ namespace GameCore.Net.Sync.Extensions
                 else if (arg.Value is CustomAttributeArgument[] cVals)
                 {
                     (Type[] _, object[] vs) = BuildConstructorData(cVals);
-                    types[i] = Type.GetType(arg.Type.FullName).MakeArrayType();
-                    values[i] = vs;
+                    Type type = Type.GetType(arg.Type.FullName).GetElementType();
+                    types[i] = type.MakeArrayType();
+                    Type listType = typeof(List<>).MakeGenericType(type);
+                    var listAdd = listType.GetMethod("Add", new Type[] { type });
+                    object arr = Activator.CreateInstance(listType, vs.Length);
+                    object[] listAddArgs = new object[1];
+                    foreach (object value in vs)
+                    {
+                        listAddArgs[0] = Convert.ChangeType(value, type);
+                        listAdd.Invoke(arr, listAddArgs);
+                    }
+                    values[i] = listType.GetMethod("ToArray").Invoke(arr, null);
                 } 
                 else
                 {
@@ -55,7 +65,7 @@ namespace GameCore.Net.Sync.Extensions
                 System.Reflection.PropertyInfo prop = type.GetProperty(property.Name, 
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic
                     );
-                if (prop.SetMethod != null) prop.SetValue(o, property.Argument.Value);
+                if (prop?.SetMethod != null) prop.SetValue(o, property.Argument.Value);
             }
 
             return o;

@@ -9,8 +9,10 @@ namespace GameCore.Net.Sync.Extensions
         {
             // todo: add more cases
             if (type.FullName != other.FullName) return false;
-            if (type.Resolve() != other.Resolve()) return false;
             if (type.IsArray != other.IsArray) return false;
+            if (type.IsByReference != other.IsByReference) return false;
+            if (type.Resolve().AssemblyQualifiedName() != other.Resolve().AssemblyQualifiedName()) return false;
+            //if (type.Resolve() != other.Resolve()) return false;
 
             return true;
         }

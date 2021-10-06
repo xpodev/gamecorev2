@@ -11,6 +11,7 @@ namespace GameCore.Net.Sync.Internal
         public static Instruction CreateLoadValue(ILProcessor il, object value)
         {
             if (value is null) return il.Create(OpCodes.Ldnull);
+            else if (value is bool bl) return il.Create(bl ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
             else if (value is string s) return il.Create(OpCodes.Ldstr, s);
             else if (value is char c) return il.Create(OpCodes.Ldc_I4, c);
             else if (value is byte b) return il.Create(OpCodes.Ldc_I4, b);
@@ -30,17 +31,15 @@ namespace GameCore.Net.Sync.Internal
 
         public static void GenerateCustomFunctionCall(ILProcessor il, CustomCallWrapper custom, IDictionary<string, object> arguments, IList<Instruction> insns = null)
         {
+            List<object> values = new List<object>();
             if (arguments != null)
             {
-                foreach ((int i, object item) in new Enumerate<object>(custom?.Arguments ?? Array.Empty<object>()))
+                foreach (string name in custom?.Arguments ?? Array.Empty<string>())
                 {
-                    if (item is string name && arguments.TryGetValue(name, out object obj))
-                    {
-                        custom.Arguments[i] = obj;
-                    }
+                    values.Add(arguments[name]);
                 }
             }
-            GenerateFunctionCall(il, custom?.Arguments, insns);
+            GenerateFunctionCall(il, values, insns);
         }
 
         public static void GenerateFunctionCall(ILProcessor il, IEnumerable<object> arguments, IList<Instruction> insns = null)

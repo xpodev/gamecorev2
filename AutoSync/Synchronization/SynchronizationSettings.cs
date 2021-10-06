@@ -8,11 +8,11 @@ namespace GameCore.Net.Sync
 
         public TypeDefinition ObjectIdType { get; set; }
 
+        public TypeDefinition NetworkManager { get; set; }
+
         public RPCDispatcher RPCDispatcher { get; set; }
 
-        public SerializationTable Serializers { get; set; }
-
-        public SerializationTable Deserializers { get; set; }
+        public SerializationTable SerializationTable { get; set; }
 
         public Authority Authority { get; set; }
 
