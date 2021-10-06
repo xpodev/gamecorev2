@@ -9,5 +9,7 @@ namespace GameCore.Net.Sync
         public MethodDefinition MessageConstructor { get; set; }
 
         public MethodDefinition MessageSenderMethod { get; set; }
+
+        public MethodReference MessageIDGetter { get; set; }
     }
 }

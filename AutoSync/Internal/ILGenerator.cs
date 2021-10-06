@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using GameCore.Net.Sync.Internal;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace GameCore.Net.Sync.Generators
+namespace GameCore.Net.Sync.Internal
 {
-    public class ILGenerator
+    internal class ILGenerator
     {
         public static Instruction CreateLoadValue(ILProcessor il, object value)
         {
@@ -27,25 +28,25 @@ namespace GameCore.Net.Sync.Generators
             else throw new ArgumentException($"Got an unexpected argument {value}", nameof(value));
         }
 
-        public static void GenerateCustomFunctionCall(ILProcessor il, CustomFunctionCallAttribute custom, IDictionary<string, object> arguments, IList<Instruction> insns = null)
+        public static void GenerateCustomFunctionCall(ILProcessor il, CustomCallWrapper custom, IDictionary<string, object> arguments, IList<Instruction> insns = null)
         {
             if (arguments != null)
             {
-                foreach ((int i, object item) in new Enumerate<object>(custom?.Args ?? Array.Empty<object>()))
+                foreach ((int i, object item) in new Enumerate<object>(custom?.Arguments ?? Array.Empty<object>()))
                 {
                     if (item is string name && arguments.TryGetValue(name, out object obj))
                     {
-                        custom.Args[i] = obj;
+                        custom.Arguments[i] = obj;
                     }
                 }
             }
-            GenerateCustomFunctionCall(il, custom, insns);
+            GenerateFunctionCall(il, custom?.Arguments, insns);
         }
 
-        public static void GenerateCustomFunctionCall(ILProcessor il, CustomFunctionCallAttribute custom, IList<Instruction> insns = null)
+        public static void GenerateFunctionCall(ILProcessor il, IEnumerable<object> arguments, IList<Instruction> insns = null)
         {
             insns = insns ?? il.Body.Instructions;
-            foreach (object item in custom?.Args ?? Array.Empty<object>())
+            foreach (object item in arguments ?? Array.Empty<object>())
             {
                 insns.Add(CreateLoadValue(il, item));
             }

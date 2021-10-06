@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Mono.Cecil;
 
 namespace GameCore.Net.Sync.Extensions
@@ -25,5 +24,36 @@ namespace GameCore.Net.Sync.Extensions
             result.GenericArguments.AddRange(types);
             return result;
         }
+
+        public static (MethodDefinition, TypeReference) GetMethodInHierarchy(this TypeReference type, string name, params TypeReference[] argsTypes)
+        {
+            MethodDefinition method;
+            do
+            {
+                if ((method = type.Resolve().GetMethod(name, argsTypes)) != null) break;
+            } while ((type = type.Resolve().BaseType) != null);
+            return (method, type);
+        }
+
+        public static (MethodDefinition, TypeReference) GetMethodInHierarchy(this TypeReference type, string name)
+        {
+            MethodDefinition method;
+            do
+            {
+                if ((method = type.Resolve().GetMethod(name)) != null) break;
+            } while ((type = type.Resolve().BaseType) != null);
+            return (method, type);
+        }
+
+        public static (PropertyDefinition, TypeReference) GetPropertyInHierarchy(this TypeReference type, string name, TypeReference pType = null)
+        {
+            PropertyDefinition property;
+            do
+            {
+                if ((property = type.Resolve().GetProperty(name, pType)) != null) break;
+            } while ((type = type.Resolve().BaseType) != null);
+            return (property, type);
+        }
+
     }
 }

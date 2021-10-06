@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameCore.Net.Sync.Extensions;
-using GameCore.Net.Sync.Generators;
+using GameCore.Net.Sync.Internal;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -28,6 +28,7 @@ namespace GameCore.Net.Sync.Processors
 
                 if (sync.Authority != settings.Authority)
                 {
+                    settings.RPCDispatcher.AddMethod(Item);
                     return true;
                 }
 
@@ -35,6 +36,9 @@ namespace GameCore.Net.Sync.Processors
 
                 if (!sync.ExecuteOnAuthority && sync.Authority == settings.Authority)
                 {
+                    if (!Item.ReturnType.IsEqualTo(Item.Module.TypeSystem.Void))
+                        Item.ReturnType = Item.Module.TypeSystem.Void;
+
                     il.Body.Instructions.Clear();
                     il.Emit(OpCodes.Ret);
                 }
@@ -51,7 +55,7 @@ namespace GameCore.Net.Sync.Processors
                 {
                     if (Item.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
                     {
-                        ILGenerator.GenerateCustomFunctionCall(il, customCall, new Dictionary<string, object>()
+                        ILGenerator.GenerateCustomFunctionCall(il, new CustomCallWrapper(customCall), new Dictionary<string, object>()
                         {
                             { "Id", sync.Id },
                             { "IsReliable", sync.Reliable },
@@ -87,7 +91,7 @@ namespace GameCore.Net.Sync.Processors
 
                     foreach (ParameterDefinition parameter in Item.Parameters)
                     {
-                        MethodReference serializer = settings.Serializers.GetSerializer(parameter.ParameterType);
+                        MethodReference serializer = settings.Serializers.GetSerializer(parameter.ParameterType).MethodReference;
                         if (serializer == null)
                         {
                             throw new Exception($"UnserializableType {parameter.ParameterType.FullName}");
@@ -104,7 +108,7 @@ namespace GameCore.Net.Sync.Processors
                                 arguments["Message"] = messageVariable;
                             else
                                 arguments.Remove("Message");
-                            ILGenerator.GenerateCustomFunctionCall(il, customCall, arguments, instructions);
+                            ILGenerator.GenerateCustomFunctionCall(il, new CustomCallWrapper(customCall), arguments, instructions);
                         } 
                         else
                         {
@@ -137,7 +141,7 @@ namespace GameCore.Net.Sync.Processors
                 {
                     if (settings.MessageSettings.MessageSenderMethod.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
                     {
-                        ILGenerator.GenerateCustomFunctionCall(il, customCall, new Dictionary<string, object>()
+                        ILGenerator.GenerateCustomFunctionCall(il, new CustomCallWrapper(customCall), new Dictionary<string, object>()
                         {
                             { "Id", sync.Id },
                             { "IsReliable", sync.Reliable },

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameCore.Net.Sync.Extensions;
+using GameCore.Net.Sync.Internal;
 using Mono.Cecil;
 
 namespace GameCore.Net.Sync
@@ -34,8 +35,8 @@ namespace GameCore.Net.Sync
             }
         }
 
-        private readonly Dictionary<TypeWrapper, MethodReference> m_strictSerializers = new Dictionary<TypeWrapper, MethodReference>();
-        private readonly Dictionary<TypeWrapper, MethodReference> m_nonStrictSerializers = new Dictionary<TypeWrapper, MethodReference>();
+        private readonly Dictionary<TypeWrapper, SerializationMethodWrapper> m_strictSerializers = new Dictionary<TypeWrapper, SerializationMethodWrapper>();
+        private readonly Dictionary<TypeWrapper, SerializationMethodWrapper> m_nonStrictSerializers = new Dictionary<TypeWrapper, SerializationMethodWrapper>();
 
         public void RegisterSerializer(TypeReference type, MethodReference method, bool strict)
         {
@@ -86,7 +87,7 @@ namespace GameCore.Net.Sync
                 }
                 if (!method.IsGenericInstance && !objParameter.ParameterType.IsEqualTo(type))
                     throw new Exception($"{serializer} first (or Object) argument must be of type {type}");
-                m_strictSerializers.Add(wrapper, method);
+                m_strictSerializers.Add(wrapper, new SerializationMethodWrapper(method));
             }
             else
             {
@@ -99,20 +100,19 @@ namespace GameCore.Net.Sync
                 {
                     throw new Exception($"There's already a serializer registered for type {type}");
                 }
-                m_nonStrictSerializers.Add(wrapper, method);
+                m_nonStrictSerializers.Add(wrapper, new SerializationMethodWrapper(method));
             }
         }
 
-        public MethodReference GetNonStrictSerializer(TypeDefinition type)
+        internal SerializationMethodWrapper GetNonStrictSerializer(TypeDefinition type)
         {
-            MethodReference result;
             do
             {
-                if (m_nonStrictSerializers.TryGetValue(new TypeWrapper(type), out result))
+                if (m_nonStrictSerializers.TryGetValue(new TypeWrapper(type), out SerializationMethodWrapper result))
                 {
-                    if (result.HasGenericParameters)
+                    if (result.MethodReference.HasGenericParameters)
                     {
-                        return result.MakeGeneric(result.Module.ImportReference(type));
+                        return new SerializationMethodWrapper(result.MethodReference.MakeGeneric(result.MethodReference.Module.ImportReference(type)));
                     }
                     return result;
                 }
@@ -120,12 +120,11 @@ namespace GameCore.Net.Sync
             return null;
         } 
 
-        public MethodReference GetSerializer(TypeReference type, bool strict)
+        internal SerializationMethodWrapper GetSerializer(TypeReference type, bool strict)
         {
-            MethodReference result;
             if (strict)
             {
-                if (m_strictSerializers.TryGetValue(new TypeWrapper(type), out result))
+                if (m_strictSerializers.TryGetValue(new TypeWrapper(type), out SerializationMethodWrapper result))
                 {
                     return result;
                 }
@@ -137,7 +136,7 @@ namespace GameCore.Net.Sync
             }
         }
 
-        public MethodReference GetSerializer(TypeReference type)
+        internal SerializationMethodWrapper GetSerializer(TypeReference type)
         {
             return GetSerializer(type, true) ?? GetSerializer(type, false);
         }

@@ -267,6 +267,7 @@ namespace GameCore.Net
         /// <param name="offset">The offset in the buffer to start writing from.</param>
         /// <param name="count">The max amount of bytes to extract.</param>
         /// <returns><c>this</c> message.</returns>
+        //[TypeDeserializer(typeof(byte[]), Direct = true, Strict = true)]
         public Message<T> Extract(byte[] buffer, int offset, int count)
         {
             reader.Read(buffer, offset, count);

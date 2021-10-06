@@ -12,6 +12,11 @@ namespace GameCore.Net.Sync
         /// </summary>
         public string ConstructorName { get; }
 
+        /// <summary>
+        /// The name of the property (or method) that returns the id of the message. default is <c>Id</c>
+        /// </summary>
+        public string IdPropertyName { get; }
+
         public MessageTypeAttribute(params object[] args) : base(args.Length == 0 ? new object[] { "Id" } : args)
         {
 

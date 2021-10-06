@@ -44,7 +44,8 @@ namespace GameCore.Net.Sync.Processors
                 if (spec.Direct && !method.HasThis && method.Parameters.FirstOrDefault(p => settings.MessageSettings.MessageType.IsClassAssignableFrom(p.ParameterType.Resolve())) == null)
                     throw new System.Exception($"Serializer method {method} is declared as Direct so it must have 1 paramter of type {settings.MessageSettings.MessageType}");
 
-                settings.Serializers.RegisterSerializer(Item.Module.ImportReference(spec.Type), method, spec.Strict);
+                (spec.Operation == SerializationOperation.Serialize ?settings.Serializers : settings.Deserializers)
+                    .RegisterSerializer(Item.Module.ImportReference(spec.Type), method, spec.Strict);
             }
         }
 

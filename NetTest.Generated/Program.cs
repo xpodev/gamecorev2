@@ -38,7 +38,10 @@ namespace NetTest.Generated
         public void DoOnServer_CallFromClient()
         {
             Console.WriteLine("This is called from the client and runs on the server");
-            ClientLog("Hello, client!");
+            ClientLog0();
+            ClientLog1();
+            ClientLog2();
+            ClientLog3();
         }
 
         [ServerSide]
@@ -49,9 +52,29 @@ namespace NetTest.Generated
         }
 
         [RunOnClient]
-        public static void ClientLog(string message)
+        public static void ClientLog0()
         {
-            Console.WriteLine("WriteOnClient: " + message);
+            Console.WriteLine("WriteOnClient0: nothing yet");
+        }
+
+        [RunOnClient]
+        public static bool ClientLog1()
+        {
+            Console.WriteLine("WriteOnClient1: nothing yet");
+            return true;
+        }
+
+        [RunOnClient]
+        public static int ClientLog2()
+        {
+            Console.WriteLine("WriteOnClient2: nothing yet");
+            return 15;
+        }
+
+        [RunOnClient]
+        public static void ClientLog3()
+        {
+            Console.WriteLine("WriteOnClient3: nothing yet");
         }
 
         public static void WriteWorks()

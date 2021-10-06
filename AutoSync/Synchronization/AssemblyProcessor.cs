@@ -10,6 +10,9 @@ namespace GameCore.Net.Sync.Processors
 
         public override bool Process(SynchronizationSettings settings)
         {
+            // todo: move this outside
+            settings.RPCDispatcher = new RPCDispatcher(new TypeDefinition("<AutoSync>", "RPCDispatcher", TypeAttributes.NotPublic));
+
             foreach (TypeDefinition type in Item.MainModule.Types.Copy())
             {
                 new TypeProcessor(type).RegisterSerializers(settings);
@@ -24,6 +27,10 @@ namespace GameCore.Net.Sync.Processors
                     Item.MainModule.Types.Remove(type);
                 }
             }
+
+            Item.MainModule.Types.Add(settings.RPCDispatcher.DeclaringType);
+            settings.RPCDispatcher.GenerateRPCDispathcerType(settings);
+
             return true;
         }
     }

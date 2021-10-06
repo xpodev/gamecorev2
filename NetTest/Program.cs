@@ -164,15 +164,6 @@ namespace NetTest
 
         static void MakeSynced(string assemblyPath, SynchronizationSettings settings, Authority authority)
         {
-            //AppDomain appDomain = AppDomain.CreateDomain($"AutoSync.{authority}");
-
-            //using (Stream assemblyStream = File.OpenRead(assemblyPath))
-            //{
-            //    byte[] data = new byte[assemblyStream.Length];
-            //    assemblyStream.Read(data, 0, data.Length);
-            //    appDomain.Load(data);
-            //}
-
             using (Stream assemblyStream = File.Open(assemblyPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
                 using (AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(assemblyStream))
@@ -189,8 +180,6 @@ namespace NetTest
                     assembly.Write();
                 }
             }
-
-            //AppDomain.Unload(appDomain);
         }
 
         static (string, string, string) PrepareSyncWithShared(string inputPath, string outputPath)
@@ -275,21 +264,38 @@ namespace NetTest
 
         static MessageSettings DefaultSettingsFor(TypeDefinition messageType)
         {
-            return GetMessageSettingsFrom(messageType, ".ctor");
+            return GetMessageSettingsFrom(messageType, ".ctor", "Id");
         }
 
         static MessageSettings ReadMessageSettingsFrom(TypeDefinition messageType)
         {
             if (messageType.GetAttribute(typeof(MessageTypeAttribute)) is MessageTypeAttribute messageSettings)
             {
-                return GetMessageSettingsFrom(messageType, messageSettings.ConstructorName ?? ".ctor");
+                return GetMessageSettingsFrom(messageType, messageSettings.ConstructorName ?? ".ctor", messageSettings.IdPropertyName ?? "Id");
             }
             return DefaultSettingsFor(messageType);
         }
 
-        static MessageSettings GetMessageSettingsFrom(TypeDefinition messageType, string constructorName)
+        static MessageSettings GetMessageSettingsFrom(TypeDefinition messageType, string constructorName, string idPropertyName)
         {
             MethodDefinition messageConstructor = messageType.GetMethod(constructorName);
+            TypeReference declaringType;
+            MethodReference idMethod;
+
+            {
+                PropertyDefinition idProperty;
+                (idProperty, declaringType) = messageType.GetPropertyInHierarchy(idPropertyName);
+                idMethod = idProperty?.GetMethod?.MakeGeneric(declaringType);
+            }
+
+            if (idMethod == null)
+            {
+                (idMethod, declaringType) = messageType.GetMethodInHierarchy(idPropertyName);
+                idMethod = idMethod?.MakeGeneric(declaringType);
+
+                if (idMethod == null)
+                    throw new Exception($"Couldn't find member {idPropertyName} in type {messageType.FullName}");
+            }
 
             if (messageConstructor.GetAttribute(typeof(CustomFunctionCallAttribute)) is CustomFunctionCallAttribute customCall)
             {
@@ -311,7 +317,8 @@ namespace NetTest
             return new MessageSettings()
             {
                 MessageConstructor = messageConstructor,
-                MessageType = messageType
+                MessageType = messageType,
+                MessageIDGetter = messageType.Module.ImportReference(idMethod)
             };
         }
 
@@ -373,6 +380,7 @@ namespace NetTest
             SynchronizationSettings settings = new SynchronizationSettings()
             {
                 Serializers = new SerializationTable(),
+                Deserializers = new SerializationTable(),
                 MessageSettings = null,
                 IncludeNonAuthorityClasses = true,
                 IncludeNonAuthorityMethods = true,

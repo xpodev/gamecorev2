@@ -9,20 +9,12 @@ namespace GameCore.Net.Sync
     {
         class DefaultUIDGenerator : IUIDGenerator<UIDType>
         {
-            private readonly System.Collections.Generic.HashSet<UIDType> m_ids = new System.Collections.Generic.HashSet<UIDType>();
+            private UIDType m_uid = 0;
 
             public UIDType GenerateUID()
             {
-                //Console.WriteLine("Generating Id...");
-                UIDType potetentialUid;
-                do
-                {
-                    potetentialUid = Guid.NewGuid().ToString().GetHashCode();
-                } while (!m_ids.Add(potetentialUid));
-                return potetentialUid;
+                return m_uid++;
             }
-
-            public void Remove(UIDType uid) => m_ids.Remove(uid);
         }
 
         public static IUIDGenerator<UIDType> UIDGenerator { get; set; }
